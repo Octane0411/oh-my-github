@@ -73,11 +73,16 @@ class AgentState(TypedDict):
     *   *理由*: 绕过 Vercel Serverless 的 10s 超时限制，支持长连接流式输出。
 *   **编排**: **LangGraph.js**
     *   *理由*: 与 Python 版功能对齐，且能与 Next.js 无缝集成，实现全栈 TypeScript。
-*   **LLM**: Claude 3.5 Sonnet (代码理解) / GPT-4o
-*   **辅助模型**: gpt-4o-mini (用于意图理解等简单任务)
+*   **LLM Provider**: **OpenRouter** (聚合 API)
+    *   *理由*: 统一接口，灵活切换模型，无最低充值门槛。
+*   **Model Strategy (混合模型)**:
+    *   **主力模型**: **DeepSeek V3** (用于意图识别、初筛、简单分析) - *高性价比*
+    *   **专家模型**: **Claude 3.5 Sonnet** (用于深度代码审计) - *最强代码能力*
+*   **辅助模型**: gpt-4o-mini (备用)
 
 ### Data (The Eyes)
 *   **Source**: GitHub API (Octokit SDK)
+    *   **Auth**: **Personal Access Token (PAT)** (MVP 阶段)
 *   **Cache**: Vercel KV / Upstash Redis (Serverless 友好)
 
 ### Storage (The Memory)

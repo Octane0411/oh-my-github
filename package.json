@@ -1,0 +1,16 @@
+{
+  "name": "oh-my-github",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "@octokit/types": "^16.0.0"
+  }
+}

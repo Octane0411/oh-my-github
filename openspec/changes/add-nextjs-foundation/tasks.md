@@ -25,12 +25,12 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 1.2.3 Commit: "style: add GitHub Primer color scheme to Tailwind"
 
 ### 1.3 Install Shadcn/ui Foundation
-- [ ] 1.3.1 Run `bunx shadcn@latest init`
+- [x] 1.3.1 Run `bunx shadcn@latest init`
   - Choose style: Default, base color: Neutral, CSS variables: Yes
-- [ ] 1.3.2 Install core components: `bunx shadcn@latest add button input card badge`
-- [ ] 1.3.3 Verify `components/ui/` directory is created with button.tsx, input.tsx, card.tsx, badge.tsx
-- [ ] 1.3.4 Test a button in `app/page.tsx` to verify Shadcn/ui works
-- [ ] 1.3.5 Commit: "feat: install Shadcn/ui core components"
+- [x] 1.3.2 Install core components: `bunx shadcn@latest add button input card badge`
+- [x] 1.3.3 Verify `components/ui/` directory is created with button.tsx, input.tsx, card.tsx, badge.tsx
+- [x] 1.3.4 Test a button in `app/page.tsx` to verify Shadcn/ui works
+- [x] 1.3.5 Commit: "feat: install Shadcn/ui core components"
 
 ### 1.4 Install Additional Dependencies
 - [x] 1.4.1 Install Markdown renderer: `bun add react-markdown remark-gfm`

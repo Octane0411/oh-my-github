@@ -14,7 +14,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 1.1.1 Run `bunx create-next-app@latest` with App Router, TypeScript, Tailwind, src/ directory = No
   - Choose: Yes to TypeScript, Yes to Tailwind CSS, No to src/ directory, Yes to App Router, No to customize import alias
 - [x] 1.1.2 Verify `app/`, `public/`, `next.config.js`, `tailwind.config.js` are created
-- [ ] 1.1.3 Test dev server: `bun run dev` should start at http://localhost:3000
+- [x] 1.1.3 Test dev server: `bun run dev` should start at http://localhost:3000
 - [x] 1.1.4 Commit: "chore: initialize Next.js 15 project with App Router"
 
 ### 1.2 Configure Tailwind with GitHub Primer Colors
@@ -48,7 +48,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
   - Import NextResponse from 'next/server'
   - Export async function POST(request: Request)
 - [x] 2.1.3 Add basic request validation (check for `repo` field)
-- [ ] 2.1.4 Test with curl: `curl -X POST http://localhost:3000/api/analyze -H "Content-Type: application/json" -d '{"repo": "test"}'`
+- [x] 2.1.4 Test with curl: `curl -X POST http://localhost:3000/api/analyze -H "Content-Type: application/json" -d '{"repo": "test"}'`
 - [x] 2.1.5 Commit: "feat: create /api/analyze endpoint skeleton"
 
 ### 2.2 Integrate GitHub Data Layer
@@ -57,7 +57,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 2.2.3 Call `extractRepoMetadata` with validated parameters
 - [x] 2.2.4 Handle errors: 404 (repo not found), 403 (rate limit), 500 (generic)
 - [x] 2.2.5 Return partial response with metadata only (before LLM integration)
-- [ ] 2.2.6 Test with curl using valid repo: `{"repo": "facebook/react"}`
+- [x] 2.2.6 Test with curl using valid repo: `{"repo": "facebook/react"}`
 - [x] 2.2.7 Commit: "feat: integrate GitHub metadata extraction in API"
 
 ### 2.3 Integrate LLM Analysis Pipeline
@@ -66,14 +66,14 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 2.3.3 Pass options: `{ detailLevel: 'detailed', reportFormat: 'markdown' }`
 - [x] 2.3.4 Structure response according to AnalyzeResponse interface (see design.md)
 - [x] 2.3.5 Add error handling for LLM errors (timeout, API key missing)
-- [ ] 2.3.6 Test end-to-end: should return full report with validation and token usage
+- [x] 2.3.6 Test end-to-end: should return full report with validation and token usage
 - [x] 2.3.7 Commit: "feat: complete /api/analyze with LLM integration"
 
 ### 2.4 Environment Variable Validation
 - [x] 2.4.1 Add check at top of route: verify `process.env.GITHUB_TOKEN` exists
 - [x] 2.4.2 Add check for `process.env.DEEPSEEK_V3_API_KEY`
 - [x] 2.4.3 Return clear error if either is missing: `{ success: false, error: { code: 'MISSING_ENV_VAR', ... } }`
-- [ ] 2.4.4 Test by temporarily removing env vars and verifying error response
+- [x] 2.4.4 Test by temporarily removing env vars and verifying error response
 - [x] 2.4.5 Commit: "feat: add environment variable validation to API"
 
 ---
@@ -97,7 +97,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 3.2.5 Implement handleSubmit: POST to `/api/analyze`, set loading state
 - [x] 3.2.6 Handle API errors: display error message below form
 - [x] 3.2.7 Emit `onSuccess` callback with analysis result
-- [ ] 3.2.8 Test form submission with valid and invalid inputs
+- [x] 3.2.8 Test form submission with valid and invalid inputs
 - [x] 3.2.9 Commit: "feat: create AnalysisForm component with API integration"
 
 ### 3.3 Build ReportDisplay Component
@@ -108,7 +108,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 3.3.5 Add token usage badge at top: "Tokens: X | Cost: $Y"
 - [x] 3.3.6 Add validation status indicator (✅ or ⚠️) if validation.isValid === false
 - [x] 3.3.7 Style report container: max-width, padding, GitHub-inspired typography
-- [ ] 3.3.8 Test with sample Markdown report
+- [x] 3.3.8 Test with sample Markdown report
 - [x] 3.3.9 Commit: "feat: create ReportDisplay component with Markdown rendering"
 
 ### 3.4 Integrate Components into Landing Page
@@ -117,7 +117,7 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 - [x] 3.4.3 Render AnalysisForm always, pass `onSuccess` handler to set result
 - [x] 3.4.4 Conditionally render ReportDisplay when `analysisResult` exists
 - [x] 3.4.5 Add "Analyze Another" button to clear result and show form again
-- [ ] 3.4.6 Test full flow: input repo → submit → see loading → see report
+- [x] 3.4.6 Test full flow: input repo → submit → see loading → see report
 - [x] 3.4.7 Commit: "feat: integrate analysis flow into landing page (Option A MVP complete)"
 
 ---

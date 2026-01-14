@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createGitHubClient } from '@/lib/github/client';
-import { extractRepoMetadata } from '@/lib/github/metadata';
+import { getOctokit } from '@/lib/github/client';
+import { extractRepositoryMetadata } from '@/lib/github/metadata';
 import { analyzeRepository } from '@/lib/analysis';
 
 export async function POST(request: Request) {
@@ -63,11 +63,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Create GitHub client
-    const githubClient = createGitHubClient(process.env.GITHUB_TOKEN);
+    // 3. Get GitHub client
+    const githubClient = getOctokit();
 
     // 4. Extract repository metadata
-    const metadata = await extractRepoMetadata(githubClient, { owner, name });
+    const metadata = await extractRepositoryMetadata(githubClient, { owner, name });
 
     // 5. Run LLM analysis
     const analysisResult = await analyzeRepository(

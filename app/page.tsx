@@ -1,6 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function Home() {
   const [repo, setRepo] = useState('');
@@ -73,19 +77,18 @@ export default function Home() {
 
         {/* Analysis Form */}
         {!result && (
-          <div className="bg-white border border-github-border rounded-lg shadow-sm p-8">
+          <Card className="p-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="repo" className="block text-sm font-medium text-github-text mb-2">
                   Repository
                 </label>
-                <input
+                <Input
                   id="repo"
                   type="text"
                   value={repo}
                   onChange={(e) => setRepo(e.target.value)}
                   placeholder="Enter repository (e.g., facebook/react)"
-                  className="w-full px-4 py-2 border border-github-border rounded-md focus:outline-none focus:ring-2 focus:ring-github-primary"
                   disabled={isLoading}
                 />
               </div>
@@ -97,21 +100,21 @@ export default function Home() {
               )}
 
               <div className="flex gap-2">
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-github-primary text-white px-6 py-2 rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="flex-1"
                 >
                   {isLoading ? 'Analyzing...' : 'Analyze'}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleTryExample}
                   disabled={isLoading}
-                  className="px-6 py-2 border border-github-border rounded-md hover:bg-github-canvas-subtle disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outline"
                 >
                   Try Example
-                </button>
+                </Button>
               </div>
             </form>
 
@@ -123,34 +126,27 @@ export default function Home() {
                 </p>
               </div>
             )}
-          </div>
+          </Card>
         )}
 
         {/* Results Display */}
         {result && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex gap-2 items-center">
-                <span className="px-3 py-1 bg-github-canvas-subtle border border-github-border rounded-full text-sm">
-                  Tokens: {result.tokenUsage?.totalTokens || 0}
-                </span>
-                <span className="px-3 py-1 bg-github-canvas-subtle border border-github-border rounded-full text-sm">
-                  Cost: ${(result.tokenUsage?.estimatedCost || 0).toFixed(4)}
-                </span>
+            <Card className="p-4 flex justify-between items-center">
+              <div className="flex gap-2">
+                <Badge>Tokens: {result.tokenUsage?.totalTokens || 0}</Badge>
+                <Badge>Cost: ${(result.tokenUsage?.estimatedCost || 0).toFixed(4)}</Badge>
               </div>
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-github-primary hover:underline"
-              >
+              <Button variant="ghost" onClick={handleReset}>
                 Analyze Another
-              </button>
-            </div>
+              </Button>
+            </Card>
 
-            <div className="bg-white border border-github-border rounded-lg shadow-sm p-8 prose prose-slate max-w-none">
+            <Card className="p-8 prose prose-slate max-w-none">
               <div className="whitespace-pre-wrap">
                 {result.report?.content?.content || 'No report available'}
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>

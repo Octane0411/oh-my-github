@@ -148,7 +148,7 @@ export default function Home() {
 
             <div className="bg-white border border-github-border rounded-lg shadow-sm p-8 prose prose-slate max-w-none">
               <div className="whitespace-pre-wrap">
-                {result.report?.content || 'No report available'}
+                {result.report?.content?.content || 'No report available'}
               </div>
             </div>
           </div>

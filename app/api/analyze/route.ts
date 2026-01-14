@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getOctokit } from '@/lib/github/client';
 import { extractRepositoryMetadata } from '@/lib/github/metadata';
-import { analyzeRepository } from '@/lib/analysis';
+import { analyzeRepository, filterContributionIssues } from '@/lib/analysis';
+import type { RepositoryMetadata as AnalysisMetadata, IssueData } from '@/lib/analysis';
+import type { CalculatedMetrics } from '@/lib/reports/generator';
 
 export async function POST(request: Request) {
   try {
@@ -63,28 +65,75 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Get GitHub client
-    const githubClient = getOctokit();
+    // 3. Extract repository metadata from GitHub
+    const fullMetadata = await extractRepositoryMetadata(owner, name);
 
-    // 4. Extract repository metadata
-    const metadata = await extractRepositoryMetadata(githubClient, { owner, name });
+    // 4. Get basic repository info for license/stars
+    const octokit = getOctokit();
+    const { data: repoData } = await octokit.rest.repos.get({ owner, repo: name });
 
-    // 5. Run LLM analysis
+    // 5. Fetch recent issues for contribution analysis
+    const { data: issuesData } = await octokit.rest.issues.listForRepo({
+      owner,
+      repo: name,
+      state: 'open',
+      per_page: 100,
+      sort: 'created',
+      direction: 'desc',
+    });
+
+    // 6. Transform metadata to analysis format
+    const analysisMetadata: AnalysisMetadata = {
+      full_name: fullMetadata.fullName,
+      stargazers_count: repoData.stargazers_count,
+      forks_count: repoData.forks_count,
+      language: fullMetadata.complexity.primaryLanguage,
+      license: repoData.license ? { name: repoData.license.name } : null,
+      updated_at: repoData.updated_at,
+      open_issues_count: fullMetadata.openIssuesCount,
+      description: fullMetadata.description,
+    };
+
+    // 7. Calculate metrics
+    const calculatedMetrics: CalculatedMetrics = {
+      prMergeRate: fullMetadata.prStats.mergeRate,
+      avgIssueResponseTime: fullMetadata.avgIssueResponseTime
+        ? `${Math.round(fullMetadata.avgIssueResponseTime / 24)} days`
+        : undefined,
+      avgPRResponseTime: undefined, // Not available in current metadata
+      recentCommitCount: fullMetadata.recentCommits,
+      openPRCount: fullMetadata.prStats.total - fullMetadata.prStats.merged - fullMetadata.prStats.closed,
+      contributorCount: fullMetadata.contributorStats.totalContributors,
+    };
+
+    // 8. Transform issues data
+    const issues: IssueData[] = issuesData.map((issue) => ({
+      number: issue.number,
+      title: issue.title,
+      labels: issue.labels.map((label) => (typeof label === 'string' ? label : label.name || '')),
+      created_at: issue.created_at,
+      state: issue.state,
+    }));
+
+    // 9. Filter issues for contribution opportunities
+    const filteredIssues = filterContributionIssues(issues);
+
+    // 10. Run LLM analysis
     const analysisResult = await analyzeRepository(
-      metadata.repositoryMetadata,
-      metadata.calculatedMetrics,
-      metadata.filteredIssues,
+      analysisMetadata,
+      calculatedMetrics,
+      filteredIssues,
       {
         detailLevel: 'detailed',
         reportFormat: 'markdown',
       }
     );
 
-    // 6. Return successful response
+    // 11. Return successful response
     return NextResponse.json({
       success: true,
       data: {
-        repository: metadata.repositoryMetadata,
+        repository: analysisMetadata,
         report: {
           content: analysisResult.report,
           format: 'markdown',

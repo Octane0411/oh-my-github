@@ -210,33 +210,33 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 ## Phase 6: Deployment ⭐
 
 ### 6.1 Vercel Deployment Setup
-- [ ] 6.1.1 Push code to GitHub repository
-- [ ] 6.1.2 Connect repository to Vercel (vercel.com)
-- [ ] 6.1.3 Configure project settings:
+- [x] 6.1.1 Push code to GitHub repository
+- [x] 6.1.2 Connect repository to Vercel (vercel.com)
+- [x] 6.1.3 Configure project settings:
   - Framework Preset: Next.js
   - Build Command: (auto-detected)
   - Install Command: `bun install` or npm install
-- [ ] 6.1.4 Add environment variables in Vercel Dashboard:
+- [x] 6.1.4 Add environment variables in Vercel Dashboard:
   - `GITHUB_TOKEN` (production value)
   - `DEEPSEEK_V3_API_KEY` (production value)
-- [ ] 6.1.5 Deploy: Vercel will auto-deploy on push
+- [x] 6.1.5 Deploy: Vercel will auto-deploy on push
 
 ### 6.2 Deployment Validation
-- [ ] 6.2.1 Wait for build to complete, check build logs for errors
-- [ ] 6.2.2 Visit deployed URL (e.g., `https://oh-my-github.vercel.app`)
-- [ ] 6.2.3 Test homepage loads correctly
-- [ ] 6.2.4 Test analysis flow with a sample repository
-- [ ] 6.2.5 Verify API route responds (check Network tab in browser DevTools)
-- [ ] 6.2.6 Test error handling with invalid input
-- [ ] 6.2.7 Check Vercel Function logs for any runtime errors
-- [ ] 6.2.8 Document deployment URL in README.md
+- [x] 6.2.1 Wait for build to complete, check build logs for errors
+- [x] 6.2.2 Visit deployed URL: https://oh-my-github-nine.vercel.app
+- [x] 6.2.3 Test homepage loads correctly
+- [x] 6.2.4 Test analysis flow with a sample repository
+- [x] 6.2.5 Verify API route responds (check Network tab in browser DevTools)
+- [x] 6.2.6 Test error handling with invalid input
+- [x] 6.2.7 Check Vercel Function logs for any runtime errors
+- [x] 6.2.8 Document deployment URL in README.md
 
 ### 6.3 Post-Deployment Checklist
-- [ ] 6.3.1 Verify all environment variables are set correctly in Vercel
-- [ ] 6.3.2 Test with multiple repositories to ensure API quota is working
-- [ ] 6.3.3 Monitor Vercel analytics for errors or slow requests
-- [ ] 6.3.4 Share deployment URL with stakeholders for feedback
-- [ ] 6.3.5 Create a GitHub Release or tag (e.g., `v0.1.0-mvp`)
+- [x] 6.3.1 Verify all environment variables are set correctly in Vercel
+- [x] 6.3.2 Test with multiple repositories to ensure API quota is working
+- [x] 6.3.3 Monitor Vercel analytics for errors or slow requests
+- [x] 6.3.4 Share deployment URL with stakeholders for feedback
+- [x] 6.3.5 Create a GitHub Release or tag (v0.1.0)
 
 ---
 

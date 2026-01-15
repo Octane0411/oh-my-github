@@ -1,8 +1,8 @@
 import type {
   AnalysisResult,
   PartialAnalysisResult,
-} from "../llm/parser.ts";
-import type { TokenUsage } from "../llm/client.ts";
+} from "../llm/parser";
+import type { TokenUsage } from "../llm/client";
 
 /**
  * Report format options

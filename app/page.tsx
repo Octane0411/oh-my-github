@@ -6,11 +6,33 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+interface AnalysisResult {
+  repository: {
+    name: string;
+    owner: string;
+    description?: string;
+    url: string;
+  };
+  report: {
+    content: string;
+    format: string;
+  };
+  validation: {
+    isValid: boolean;
+    errors?: string[];
+    warnings?: string[];
+  };
+  tokenUsage: {
+    totalTokens: number;
+    estimatedCost: number;
+  };
+}
+
 export default function Home() {
   const [repo, setRepo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +67,7 @@ export default function Home() {
 
       // Save to localStorage
       localStorage.setItem('lastAnalysis', JSON.stringify(data.data));
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -144,7 +166,7 @@ export default function Home() {
 
             <Card className="p-8 prose prose-slate max-w-none">
               <div className="whitespace-pre-wrap">
-                {result.report?.content?.content || 'No report available'}
+                {result.report?.content || 'No report available'}
               </div>
             </Card>
           </div>

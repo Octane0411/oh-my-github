@@ -147,8 +147,10 @@ export async function searchRepositories(
     console.log(`   Found ${data.total_count} total matches (returning ${data.items.length})`);
 
     // Transform results
-    const results: SearchResult[] = data.items.map((repo) => ({
-      owner: repo.owner.login,
+    const results: SearchResult[] = data.items
+      .filter((repo) => repo.owner !== null)
+      .map((repo) => ({
+      owner: repo.owner!.login,
       name: repo.name,
       fullName: repo.full_name,
       description: repo.description,
@@ -174,10 +176,11 @@ export async function searchRepositories(
     console.log(`   After deduplication: ${filtered.length} repositories`);
 
     return filtered.slice(0, maxResults);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle rate limiting
-    if (error.status === 403 && error.message?.includes("rate limit")) {
-      const resetTime = error.response?.headers?.["x-ratelimit-reset"];
+    const errorWithStatus = error as { status?: number; message?: string; response?: { headers?: Record<string, string> } };
+    if (errorWithStatus.status === 403 && errorWithStatus.message?.includes("rate limit")) {
+      const resetTime = errorWithStatus.response?.headers?.["x-ratelimit-reset"];
       const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : null;
 
       throw new Error(
@@ -188,7 +191,7 @@ export async function searchRepositories(
     }
 
     // Re-throw other errors
-    throw new Error(`GitHub search failed: ${error.message}`);
+    throw new Error(`GitHub search failed: ${errorWithStatus.message || 'Unknown error'}`);
   }
 }
 

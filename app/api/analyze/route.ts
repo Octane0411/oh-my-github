@@ -135,8 +135,8 @@ export async function POST(request: Request) {
       data: {
         repository: analysisMetadata,
         report: {
-          content: analysisResult.report,
-          format: 'markdown',
+          content: analysisResult.report.content,
+          format: analysisResult.report.format,
         },
         validation: analysisResult.validation,
         tokenUsage: {
@@ -145,11 +145,12 @@ export async function POST(request: Request) {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Analysis error:', error);
 
     // Handle specific GitHub API errors
-    if (error.status === 404) {
+    const errorWithStatus = error as { status?: number; message?: string; response?: { headers?: Record<string, string> } };
+    if (errorWithStatus.status === 404) {
       return NextResponse.json(
         {
           success: false,
@@ -162,7 +163,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (error.status === 403) {
+    if (errorWithStatus.status === 403) {
       return NextResponse.json(
         {
           success: false,
@@ -181,8 +182,8 @@ export async function POST(request: Request) {
         success: false,
         error: {
           code: 'INTERNAL_ERROR',
-          message: error.message || 'An unexpected error occurred',
-          details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+          message: errorWithStatus.message || 'An unexpected error occurred',
+          details: process.env.NODE_ENV === 'development' ? (error as { stack?: string }).stack : undefined,
         },
       },
       { status: 500 }

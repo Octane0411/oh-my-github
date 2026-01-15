@@ -2,21 +2,21 @@
  * Main analysis module integrating GitHub data layer with LLM analysis
  */
 
-import { createLLMClient, type LLMClient } from "./llm/client.ts";
+import { createLLMClient, type LLMClient } from "./llm/client";
 import {
   REPOSITORY_ANALYSIS_PROMPT,
   BRIEF_REPOSITORY_ANALYSIS_PROMPT,
   formatRepositoryData,
-} from "./llm/prompts.ts";
-import { parseAnalysisResponse } from "./llm/parser.ts";
+} from "./llm/prompts";
+import { parseAnalysisResponse } from "./llm/parser";
 import {
   generateReport,
   type ReportFormat,
   type ReportDetailLevel,
   type CalculatedMetrics,
   type Report,
-} from "./reports/generator.ts";
-import { validateReport } from "./reports/validator.ts";
+} from "./reports/generator";
+import { validateReport } from "./reports/validator";
 
 /**
  * Repository metadata from GitHub API

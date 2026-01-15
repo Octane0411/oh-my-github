@@ -177,7 +177,7 @@ async function calculateIssueResponseTime(
         per_page: 1,
       });
 
-      if (comments.length > 0) {
+      if (comments.length > 0 && comments[0]) {
         const firstResponseAt = new Date(comments[0].created_at);
         const responseTimeMs = firstResponseAt.getTime() - createdAt.getTime();
         const responseTimeHours = responseTimeMs / (1000 * 60 * 60);
@@ -320,7 +320,7 @@ async function analyzeContributors(
 
     const collaboratorLogins = new Set(collaborators.map((c) => c.login));
     const externalContributors = contributors.filter(
-      (c) => !collaboratorLogins.has(c.login)
+      (c) => c.login && !collaboratorLogins.has(c.login)
     ).length;
 
     const totalContributors = contributors.length;

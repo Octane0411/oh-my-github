@@ -178,22 +178,22 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
 ## Phase 5: Testing & Validation ⭐
 
 ### 5.1 Local Testing
-- [ ] 5.1.1 Test all routes load without errors: `/`, `/workspace` (if Option B)
-- [ ] 5.1.2 Test API endpoint with multiple repositories:
+- [x] 5.1.1 Test all routes load without errors: `/`, `/workspace` (if Option B)
+- [x] 5.1.2 Test API endpoint with multiple repositories:
   - Valid repo: `facebook/react`
   - Invalid format: `just-a-name`
   - Non-existent repo: `fake/repo123456`
-- [ ] 5.1.3 Verify error handling displays correctly in UI
-- [ ] 5.1.4 Check browser console for errors or warnings
-- [ ] 5.1.5 Test responsive behavior (desktop-first, but should not break)
-- [ ] 5.1.6 Document any issues in proposal or design.md
+- [x] 5.1.3 Verify error handling displays correctly in UI
+- [x] 5.1.4 Check browser console for errors or warnings
+- [x] 5.1.5 Test responsive behavior (desktop-first, but should not break)
+- [x] 5.1.6 Document any issues in proposal or design.md
 
 ### 5.2 Build Validation
-- [ ] 5.2.1 Run `bun run build` locally
-- [ ] 5.2.2 Fix any TypeScript errors or build warnings
-- [ ] 5.2.3 Run `bun run start` and verify production build works
-- [ ] 5.2.4 Check bundle size: `ls -lh .next/static`
-- [ ] 5.2.5 Commit: "test: validate production build"
+- [x] 5.2.1 Run `bun run build` locally
+- [x] 5.2.2 Fix any TypeScript errors or build warnings
+- [x] 5.2.3 Run `bun run start` and verify production build works
+- [x] 5.2.4 Check bundle size: `ls -lh .next/static`
+- [x] 5.2.5 Commit: "test: validate production build"
 
 ### 5.3 Environment Setup for Deployment
 - [x] 5.3.1 Create `.env.local.example` with placeholder values:

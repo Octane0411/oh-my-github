@@ -1,4 +1,4 @@
-import type { Report } from "./generator.ts";
+import type { Report, ReportMetadata } from "./generator";
 
 /**
  * Report validation result
@@ -105,7 +105,7 @@ function validateMarkdownReport(content: string): {
       const match = link.match(/\[([^\]]+)\]\(([^)]+)\)/);
       if (match) {
         const url = match[2];
-        if (url.trim() === "" || url === "#") {
+        if (url && (url.trim() === "" || url === "#")) {
           warnings.push(`Broken or empty link: ${link}`);
         }
       }
@@ -227,7 +227,7 @@ function validateSectionCompleteness(content: string): {
  * @param metadata - Report metadata
  * @returns Validation result
  */
-export function validateMetadata(metadata: any): ValidationResult {
+export function validateMetadata(metadata: ReportMetadata): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 

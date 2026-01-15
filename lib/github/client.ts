@@ -56,7 +56,8 @@ export function getOctokit(): Octokit {
     userAgent: "oh-my-github/1.0.0",
     // Add rate limit hook to track usage
     request: {
-      hook: async (request, options) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      hook: async (request: any, options: any) => {
         const response = await request(options);
 
         // Update rate limit info from response headers

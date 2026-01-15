@@ -56,7 +56,7 @@
 
 **目标**: 建立 Web 应用最小可用版本，验证端到端流程
 
-#### 🚧 Proposal 3: `add-nextjs-foundation` (Minimal)
+#### ✅ Proposal 3: `add-nextjs-foundation` (Minimal)
 - **优先级**: 🔴 P0 (必选)
 - **目标**: 搭建 Next.js 最小化基础架构，快速验证 Web 端流程
 - **策略**: **采用 Option A（最小化方案）**
@@ -71,14 +71,16 @@
   - `api-routes` - 后端接口 (10 requirements)
 - **预计耗时**: 1-2 天 (~11 小时)
 - **依赖**: Proposal 1, 2 ✅
-- **状态**: 🚧 **进行中** (提案已创建，等待实现)
+- **状态**: ✅ **已完成** (2026-01-15)
+  - 🌐 部署地址: https://oh-my-github-nine.vercel.app
+  - 🏷️ 版本标签: v0.1.0
 - **验收标准**:
   - ✅ 用户可访问 Web 界面
   - ✅ 输入 "facebook/react" 可获得完整分析报告
   - ✅ 部署到 Vercel 成功
   - ✅ 端到端流程验证通过
 
-**🎯 Milestone 2: 最小 Web 版本上线** (完成 Proposal 3 后达成)
+**🎯 Milestone 2: 最小 Web 版本上线** ✅ **已达成** (2026-01-15)
 - 验收标准: 可公开访问的 Web 应用，能完整演示核心价值
 
 ---
@@ -292,7 +294,7 @@
 | 阶段 | Proposal | 状态 | 预计时间 |
 |------|----------|------|---------|
 | **1. PoC** | 1-2 | ✅ 完成 | 2-4 天 |
-| **2. Web 基础** | 3 | 🚧 进行中 | 1-2 天 |
+| **2. Web 基础** | 3 | ✅ 完成 | 1-2 天 |
 | **3. Multi-Agent** | 4-7 | 📝 未开始 | 8-10 天 |
 | **4. UI 完善** | 8 | 📝 未开始 | 2-3 天 |
 | **5. 实时体验** | 9-10 | 📝 未开始 | 4-6 天 |
@@ -320,8 +322,8 @@
 
 ```
 Day 0-4:   [✅ Milestone 1: PoC 完成]
-Day 5-6:   [🚧 Milestone 2: 最小 Web 版本上线] ← 当前位置
-Day 7-16:  [📝 Milestone 3: Multi-Agent 系统完成]
+Day 5-6:   [✅ Milestone 2: 最小 Web 版本上线]
+Day 7-16:  [📝 Milestone 3: Multi-Agent 系统完成] ← 当前位置
 Day 17-19: [📝 Milestone 4: UI 基础完整] ← 新增确认点
 Day 20-22: [📝 Milestone 5: MVP 完整上线]
 Day 23-27: [📝 Milestone 6: 生产就绪] (可选)
@@ -331,35 +333,33 @@ Day 23-27: [📝 Milestone 6: 生产就绪] (可选)
 
 ## 🚀 下一步行动
 
-**当前焦点**: Proposal 3 - `add-nextjs-foundation` (Minimal)
+**当前焦点**: Proposal 4 - `add-query-translator-agent`
 
-**实现路径** (已创建提案文档):
-1. ✅ 提案文档已创建：`openspec/changes/add-nextjs-foundation/`
-   - ✅ proposal.md - 提案概述
-   - ✅ design.md - 架构设计（18个关键决策）
-   - ✅ tasks.md - 实现清单（7个阶段，60+任务）
-   - ✅ specs/ - 需求规范（20个需求，65+场景）
-2. ✅ 验证通过：`openspec validate add-nextjs-foundation --strict`
-3. 🚧 **下一步**: 开始实现 Phase 1（项目设置）
+**Proposal 3 总结** ✅:
+- ✅ Next.js 15 项目搭建完成
+- ✅ Shadcn/ui 组件集成
+- ✅ API Route 实现并集成 GitHub + LLM
+- ✅ 最小化 UI (输入框 + 报告展示)
+- ✅ Vercel 部署成功: https://oh-my-github-nine.vercel.app
+- ✅ 版本标签: v0.1.0
 
-**启动命令**:
+**下一步准备**:
+在开始 Proposal 4 之前，需要创建对应的 openspec 提案文档：
 ```bash
-# 开始实现 Proposal 3
-cd /path/to/oh-my-github
+# 1. 创建 Proposal 4 提案目录
+mkdir -p openspec/changes/add-query-translator-agent
 
-# Phase 1: 初始化 Next.js 项目
-bunx create-next-app@latest
-# 选择: TypeScript ✅, Tailwind ✅, App Router ✅, src/ directory ❌
+# 2. 编写提案文档
+# - proposal.md: 提案概述
+# - design.md: 架构设计
+# - tasks.md: 实现清单
+# - specs/: 需求规范
 
-# Phase 2: 安装 Shadcn/ui
-bunx shadcn@latest init
-bunx shadcn@latest add button input card badge
+# 3. 验证提案
+openspec validate add-query-translator-agent --strict
 
-# Phase 3: 创建 API Route
-mkdir -p app/api/analyze
-# 开始编写 app/api/analyze/route.ts...
-
-# 参考详细步骤：openspec/changes/add-nextjs-foundation/tasks.md
+# 4. 应用提案并开始实现
+openspec apply add-query-translator-agent
 ```
 
 ---
@@ -415,6 +415,8 @@ mkdir -p app/api/analyze
 | 2026-01-14 | 更新 Proposal 1-2 状态为"已归档" | PoC 阶段完成 |
 | 2026-01-14 | 调整后续 Proposal 编号 (8→9, 9→10, 10→11) | 为新增的 Proposal 8 腾出编号 |
 | 2026-01-14 | 更新时间估算：MVP 从 13-17 天调整为 15-22 天 | 反映拆分后的实际时间线 |
+| 2026-01-15 | **Proposal 3 完成，Milestone 2 达成** | Next.js MVP 部署成功，阶段 2 完成 |
+| 2026-01-15 | 更新 Git 工作流为 GitHub Flow | 从 dev 分支迁移到 main 作为默认分支 |
 
 ---
 

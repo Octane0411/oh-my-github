@@ -248,13 +248,18 @@ This task list supports **both Option A (Minimal) and Option B (Complete)**. Tas
   - Local development instructions
   - Environment variable setup
   - How to run development server
-- [ ] 7.1.2 Add CONTRIBUTING.md if not exists (basic guidelines)
-- [ ] 7.1.3 Update openspec_roadmap.md: mark Proposal 3 as completed
+- [x] 7.1.2 Add CONTRIBUTING.md with:
+  - Development setup instructions
+  - GitHub Flow workflow
+  - Code standards and conventions
+  - Commit message guidelines
+  - PR process
+- [x] 7.1.3 Update openspec_roadmap.md: mark Proposal 3 as completed
 
 ### 7.2 Create Deployment Guide
-- [ ] 7.2.1 Document Vercel deployment steps in `/docs/deployment.md`
-- [ ] 7.2.2 Include screenshots or step-by-step instructions
-- [ ] 7.2.3 Document environment variable requirements
+- [~] 7.2.1 Document Vercel deployment steps in `/docs/deployment.md` - **NOT NEEDED** (deployment is straightforward)
+- [~] 7.2.2 Include screenshots or step-by-step instructions - **NOT NEEDED**
+- [~] 7.2.3 Document environment variable requirements - **NOT NEEDED** (covered in .env.local.example and README)
 
 ### 7.3 Code Documentation
 - [x] 7.3.1 Ensure all API routes have JSDoc comments

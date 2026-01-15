@@ -21,43 +21,91 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 # Git Workflow
 
-**IMPORTANT: Do NOT commit directly to the `dev` branch.**
+We use **GitHub Flow** for development - a simple, branch-based workflow.
 
 ## Branch Strategy
 
-- **`dev`**: Development main branch (protected)
-- **Feature branches**: `feat/<feature-name>` for new features
-- **Other branches**: `fix/<bug-name>`, `docs/<doc-name>`, etc.
+- **`main`**: Main branch (default branch)
+  - Always in a deployable state
+  - All production deployments come from this branch
+  - Code merged only through Pull Requests
+  - Protected: no direct pushes allowed
+  - Important releases are tagged (e.g., `v0.1.0`, `v1.0.0`)
+
+- **Feature branches**: Created from `main`, naming conventions:
+  - `feat/<feature-name>` - New features
+  - `fix/<bug-name>` - Bug fixes
+  - `docs/<topic>` - Documentation updates
+  - `chore/<task>` - Maintenance tasks
+  - `refactor/<scope>` - Code refactoring
 
 ## Development Workflow
 
-1. **Always work on feature branches**, never directly on `dev`
-2. **Branch naming**:
-   - New features: `feat/<feature-name>`
-   - Bug fixes: `fix/<bug-name>`
-   - Documentation: `docs/<topic-name>`
-   - Refactoring: `refactor/<scope>`
+1. **Create branch from main**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feat/my-feature
+   ```
 
-3. **Commit workflow**:
-   - Make commits to the feature branch
+2. **Develop and commit**:
+   - Make changes in the feature branch
    - Keep commits focused and atomic
    - Use conventional commit messages
 
-4. **Integration**:
-   - Push feature branch to origin
-   - User will create PR and merge on GitHub
-   - Do NOT merge branches locally
+3. **Push to remote**:
+   ```bash
+   git push origin feat/my-feature
+   ```
+
+4. **Create Pull Request**:
+   - Open PR on GitHub targeting `main`
+   - Add description and context
+   - (Optional) Request code review
+
+5. **Merge**:
+   - Merge PR on GitHub (squash or merge commit)
+   - Delete feature branch after merge
+
+6. **Clean up local branch**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git branch -d feat/my-feature
+   ```
+
+## Release Process
+
+When releasing a new version:
+
+1. Ensure `main` is stable and tested
+2. Create and push an annotated tag:
+   ```bash
+   git tag -a v1.0.0 -m "Release v1.0.0: Description"
+   git push origin v1.0.0
+   ```
+3. Create a GitHub Release with changelog
+4. Deploy from `main` branch
 
 ## Rules for AI Assistants
 
-- ✅ **DO**: Work on feature branches (`feat/*`, `fix/*`, etc.)
+- ✅ **DO**: Work on feature branches (`feat/*`, `fix/*`, `docs/*`, etc.)
 - ✅ **DO**: Commit to feature branches
 - ✅ **DO**: Push feature branches to origin when ready
-- ❌ **DON'T**: Commit directly to `dev` branch
-- ❌ **DON'T**: Merge branches (user handles merges via GitHub PR)
-- ❌ **DON'T**: Switch to `dev` unless explicitly instructed
+- ✅ **DO**: Remind user to create Pull Request on GitHub
+- ❌ **DON'T**: Push directly to `main` branch
+- ❌ **DON'T**: Merge branches locally (user handles merges via GitHub PR)
+- ❌ **DON'T**: Switch to `main` unless explicitly instructed
 
 **Before committing, always verify you're on the correct feature branch:**
 ```bash
 git branch --show-current
 ```
+
+## Why GitHub Flow?
+
+- **Simple**: Only one main branch, easy to understand
+- **Fast**: Quick iterations, continuous deployment
+- **Safe**: All changes reviewed via Pull Requests
+- **Scalable**: Works for teams of all sizes
+- **Industry standard**: Used by React, Next.js, and many open-source projects

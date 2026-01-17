@@ -2,11 +2,8 @@
  * Screener Agent
  *
  * Two-stage filtering to select Top 10 repositories:
- * - Stage 1 (Coarse Filter): Rule-based filtering 50-100 → ~25
- * - Stage 2 (Fine Scoring): LLM-based scoring + ranking → Top 10
- *
- * Phase 3 implements Stage 1 only.
- * Stage 2 will be added in Phase 4-5.
+ * - Stage 1 (Coarse Filter): Rule-based filtering 50-100 -> ~25
+ * - Stage 2 (Fine Scoring): Multi-dimensional scoring + ranking -> Top 10
  */
 
 import type { Repository, ScoredRepository } from "../types";
@@ -15,79 +12,66 @@ import {
   DEFAULT_COARSE_FILTER_CONFIG,
   type CoarseFilterConfig,
 } from "./coarse-filter";
+import { applyFineScoring } from "./fine-scoring";
+
+/** Result from screening repositories */
+interface ScreeningResult {
+  coarseFiltered: Repository[];
+  topRepos: ScoredRepository[];
+}
 
 /**
- * Screener Agent: Filter and rank repositories
+ * Screen and rank repositories through two-stage filtering
  *
- * Phase 3: Stage 1 only (coarse filter)
- * Phase 4-5: Add Stage 2 (fine scoring)
- *
- * @param candidates - Candidate repositories from Scout
- * @param userQuery - Original user query (for Stage 2 relevance scoring)
- * @param config - Optional filter configuration
- * @returns Coarse-filtered repositories (Stage 1 only for now)
+ * @param candidates - Candidate repositories from Scout (50-100)
+ * @param userQuery - Original user query for relevance scoring
+ * @param config - Optional coarse filter configuration
+ * @returns Filtered repositories and top 10 scored results
  */
 export async function screenRepositories(
   candidates: Repository[],
   userQuery: string,
   config: CoarseFilterConfig = DEFAULT_COARSE_FILTER_CONFIG
-): Promise<{
-  coarseFiltered: Repository[];
-  topRepos?: ScoredRepository[]; // Will be populated in Phase 4-5
-}> {
-  console.log(`\n🎯 Screener: Processing ${candidates.length} candidates...`);
+): Promise<ScreeningResult> {
+  console.log(`\n[Screener] Processing ${candidates.length} candidates...`);
 
-  // Stage 1: Coarse Filter (Phase 3)
   const coarseFiltered = applyCoarseFilter(candidates, config);
+  console.log(`[Screener Stage 1] ${coarseFiltered.length} repos passed coarse filter`);
 
-  console.log(
-    `\n✅ Screener Stage 1 complete: ${coarseFiltered.length} repos passed`
-  );
+  const topRepos = await applyFineScoring(coarseFiltered, userQuery);
 
-  // TODO Phase 4-5: Stage 2 - Fine Scoring
-  // - Fetch README previews
-  // - Call LLM for Documentation + Ease of Use scores
-  // - Calculate metadata-based scores (Maturity, Activity, Community, Maintenance)
-  // - Aggregate overall scores
-  // - Sort and return Top 10
+  return { coarseFiltered, topRepos };
+}
 
-  return {
-    coarseFiltered,
-    topRepos: undefined, // Will be implemented in Phase 4-5
-  };
+/** Input state for screener node */
+interface ScreenerNodeInput {
+  candidateRepos?: Repository[];
+  userQuery: string;
+  executionTime: Record<string, number>;
+}
+
+/** Output state from screener node */
+interface ScreenerNodeOutput {
+  coarseFilteredRepos: Repository[];
+  topRepos: ScoredRepository[];
+  executionTime: Record<string, number>;
 }
 
 /**
  * Screener node for LangGraph workflow
  */
-export async function screenerNode(state: {
-  candidateRepos?: Repository[];
-  userQuery: string;
-  executionTime: Record<string, number>;
-}): Promise<{
-  coarseFilteredRepos: Repository[];
-  topRepos?: ScoredRepository[];
-  executionTime: Record<string, number>;
-}> {
+export async function screenerNode(state: ScreenerNodeInput): Promise<ScreenerNodeOutput> {
   if (!state.candidateRepos) {
     throw new Error("candidateRepos is required for Screener agent");
   }
 
   const startTime = Date.now();
-
-  const result = await screenRepositories(
-    state.candidateRepos,
-    state.userQuery
-  );
-
-  const executionTime = {
-    ...state.executionTime,
-    screenerStage1: Date.now() - startTime,
-  };
+  const result = await screenRepositories(state.candidateRepos, state.userQuery);
+  const screenerTime = Date.now() - startTime;
 
   return {
     coarseFilteredRepos: result.coarseFiltered,
     topRepos: result.topRepos,
-    executionTime,
+    executionTime: { ...state.executionTime, screener: screenerTime },
   };
 }

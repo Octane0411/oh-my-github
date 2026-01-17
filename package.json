@@ -6,20 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@langchain/langgraph": "^0.2.31",
+    "@langchain/core": "^0.3.32",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
     "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lru-cache": "^11.0.2",
     "lucide-react": "^0.562.0",
     "next": "^15.1.6",
     "openai": "^4.77.3",
+    "p-limit": "^6.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.1",
+    "recharts": "^2.15.0",
     "remark-gfm": "^4.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"

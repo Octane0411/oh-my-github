@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { executeSearchPipeline } from "@/lib/agents/h1-search-pipeline/workflow";
 import type { SearchPipelineState } from "@/lib/agents/h1-search-pipeline/types";
+import { createLogger, generateRequestId } from "@/lib/agents/h1-search-pipeline/logger";
+import { estimateSearchCost } from "@/lib/agents/h1-search-pipeline/cost-tracking";
 
 /**
  * Search API Request Body
@@ -48,9 +50,14 @@ interface SearchResponse {
  * - error: Error details if search failed
  */
 export async function POST(request: Request): Promise<NextResponse<SearchResponse>> {
+  const requestId = generateRequestId();
+  const logger = createLogger(requestId);
+  const startTime = Date.now();
+
   try {
     // 1. Validate environment variables
     if (!process.env.GITHUB_TOKEN) {
+      logger.error("Missing GITHUB_TOKEN environment variable");
       return NextResponse.json(
         {
           success: false,
@@ -64,6 +71,7 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
     }
 
     if (!process.env.DEEPSEEK_API_KEY && !process.env.OPENAI_API_KEY) {
+      logger.error("Missing LLM API key (DEEPSEEK_API_KEY or OPENAI_API_KEY)");
       return NextResponse.json(
         {
           success: false,
@@ -80,7 +88,11 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
     const body = await request.json() as SearchRequest;
     const { query, mode = "balanced" } = body;
 
+    // Log incoming request
+    logger.logRequest(query || "", mode);
+
     if (!query || typeof query !== "string" || query.trim().length === 0) {
+      logger.warn("Invalid query received", { metadata: { query: query || "empty" } });
       return NextResponse.json(
         {
           success: false,
@@ -120,11 +132,26 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
     }
 
     // 3. Execute search pipeline
-    console.log(`[API] Search request: "${query}" (mode: ${mode})`);
-    const result = await executeSearchPipeline(query, mode);
+    const result = await executeSearchPipeline(query, mode, 90000, true, logger);
 
-    // 4. Check if we got results
+    // 4. Log performance metrics
+    const duration = Date.now() - startTime;
+    const screenerTime = (result.executionTime.screenerStage1 || 0) + (result.executionTime.screenerStage2 || 0);
+    logger.logPerformance(query, mode, {
+      totalTime: result.executionTime.total || duration,
+      queryTranslator: result.executionTime.queryTranslator || 0,
+      scout: result.executionTime.scout || 0,
+      screener: screenerTime,
+      cached: result.cached || false,
+    });
+
+    // 5. Log cost estimate
+    const costEstimate = estimateSearchCost(result.coarseFilteredRepos?.length || 20);
+    logger.logCost(query, mode, costEstimate.llmCost);
+
+    // 6. Check if we got results
     if (!result.topRepos || result.topRepos.length === 0) {
+      logger.logResponse(query, mode, 0, duration, result.cached || false);
       return NextResponse.json(
         {
           success: true,
@@ -144,8 +171,8 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
       );
     }
 
-    // 5. Return successful response
-    console.log(`[API] Search completed: ${result.topRepos.length} results in ${result.executionTime.total}ms`);
+    // 7. Return successful response
+    logger.logResponse(query, mode, result.topRepos.length, duration, result.cached || false);
     return NextResponse.json({
       success: true,
       data: {
@@ -161,10 +188,14 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
       },
     });
   } catch (error: unknown) {
-    console.error("[API] Search error:", error);
-
     // Handle specific errors
     const errorWithMessage = error as { message?: string; code?: string; stack?: string };
+    const err = error instanceof Error ? error : new Error(String(error));
+
+    logger.logError("Search pipeline error", err, {
+      query: (error as any).query,
+      mode: (error as any).mode,
+    });
 
     // Query translation failure
     if (errorWithMessage.message?.includes("Query translation failed")) {

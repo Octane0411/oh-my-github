@@ -15,6 +15,7 @@ import { queryTranslatorNode } from "./query-translator";
 import { scoutNode } from "./scout";
 import { screenerNode } from "./screener";
 import { getCachedResult, setCachedResult } from "./cache";
+import type { Logger } from "./logger";
 
 /**
  * LangGraph State Annotation
@@ -57,9 +58,13 @@ export function createSearchPipelineWorkflow() {
   workflow.addNode("screener", screenerNode);
 
   // Define edges (Phase 1-3: Query Translator → Scout → Screener)
+  // @ts-expect-error - LangGraph type definitions don't properly support custom node names
   workflow.setEntryPoint("query_translator");
+  // @ts-expect-error - LangGraph type definitions don't properly support custom node names
   workflow.addEdge("query_translator", "scout");
+  // @ts-expect-error - LangGraph type definitions don't properly support custom node names
   workflow.addEdge("scout", "screener");
+  // @ts-expect-error - LangGraph type definitions don't properly support custom node names
   workflow.setFinishPoint("screener");
 
   // Compile the workflow
@@ -75,22 +80,26 @@ export function createSearchPipelineWorkflow() {
  * @param searchMode - Search mode (focused/balanced/exploratory)
  * @param timeoutMs - Maximum execution time in milliseconds (default: 90000ms = 90s)
  * @param useCache - Whether to use cache (default: true)
+ * @param logger - Optional logger instance for structured logging
  * @returns Final state with Top 10 repositories
  */
 export async function executeSearchPipeline(
   userQuery: string,
   searchMode: SearchPipelineState["searchMode"] = "balanced",
   timeoutMs: number = 90000,
-  useCache: boolean = true
+  useCache: boolean = true,
+  logger?: Logger
 ): Promise<SearchPipelineState> {
   const startTime = Date.now();
 
   // Check cache first
   if (useCache) {
-    const cached = getCachedResult(userQuery, searchMode);
+    const cached = getCachedResult(userQuery, searchMode, logger);
     if (cached) {
+      logger?.logCache(userQuery, searchMode, true);
       return cached;
     }
+    logger?.logCache(userQuery, searchMode, false);
   }
 
   // Initialize state
@@ -106,6 +115,9 @@ export async function executeSearchPipeline(
     // Create workflow
     const app = createSearchPipelineWorkflow();
 
+    // Log pipeline start
+    logger?.logStageStart("pipeline", userQuery, searchMode);
+
     // Execute with timeout
     const result = await Promise.race([
       app.invoke(initialState),
@@ -120,23 +132,41 @@ export async function executeSearchPipeline(
 
     const finalResult = result as SearchPipelineState;
 
+    // Log pipeline completion
+    logger?.logStageComplete("pipeline", userQuery, searchMode, totalTime, {
+      candidateRepos: finalResult.candidateRepos?.length || 0,
+      coarseFiltered: finalResult.coarseFilteredRepos?.length || 0,
+      topRepos: finalResult.topRepos?.length || 0,
+    });
+
     // Cache successful results
     if (useCache && finalResult.topRepos && finalResult.topRepos.length > 0) {
-      setCachedResult(userQuery, searchMode, finalResult);
+      setCachedResult(userQuery, searchMode, finalResult, logger);
     }
 
     return finalResult;
   } catch (error) {
     const elapsedTime = Date.now() - startTime;
+    const err = error instanceof Error ? error : new Error(String(error));
 
     // Check if it was a timeout
     if (error instanceof Error && error.message.includes("timed out")) {
+      logger?.logError("Pipeline timeout", err, {
+        query: userQuery,
+        mode: searchMode,
+        stage: "pipeline",
+      });
       throw new Error(
         `Search pipeline timed out after ${elapsedTime}ms (limit: ${timeoutMs}ms). Try a more specific query.`
       );
     }
 
     // Handle other pipeline failures
+    logger?.logError("Pipeline execution failed", err, {
+      query: userQuery,
+      mode: searchMode,
+      stage: "pipeline",
+    });
     throw new Error(
       `Search pipeline failed: ${error instanceof Error ? error.message : String(error)}`
     );

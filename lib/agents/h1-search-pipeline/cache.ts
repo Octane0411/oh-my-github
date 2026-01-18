@@ -11,8 +11,9 @@
  * - In-memory storage (no persistence)
  */
 
-import LRUCache from "lru-cache";
+import { LRUCache } from "lru-cache";
 import type { SearchPipelineState } from "./types";
+import type { Logger } from "./logger";
 
 /**
  * Cache key for a search query
@@ -39,24 +40,34 @@ const searchCache = new LRUCache<string, SearchPipelineState>({
  *
  * @param query - User query
  * @param mode - Search mode
+ * @param logger - Optional logger instance
  * @returns Cached result if available, undefined otherwise
  */
 export function getCachedResult(
   query: string,
-  mode: string
+  mode: string,
+  logger?: Logger
 ): SearchPipelineState | undefined {
   const key = getCacheKey(query, mode);
   const cached = searchCache.get(key);
 
   if (cached) {
-    console.log(`[Cache] HIT: "${query}" (${mode})`);
+    if (logger) {
+      logger.debug("Cache HIT", { query, mode });
+    } else {
+      console.log(`[Cache] HIT: "${query}" (${mode})`);
+    }
     return {
       ...cached,
       cached: true, // Mark as cached result
     };
   }
 
-  console.log(`[Cache] MISS: "${query}" (${mode})`);
+  if (logger) {
+    logger.debug("Cache MISS", { query, mode });
+  } else {
+    console.log(`[Cache] MISS: "${query}" (${mode})`);
+  }
   return undefined;
 }
 
@@ -66,15 +77,21 @@ export function getCachedResult(
  * @param query - User query
  * @param mode - Search mode
  * @param result - Search pipeline result
+ * @param logger - Optional logger instance
  */
 export function setCachedResult(
   query: string,
   mode: string,
-  result: SearchPipelineState
+  result: SearchPipelineState,
+  logger?: Logger
 ): void {
   const key = getCacheKey(query, mode);
   searchCache.set(key, result);
-  console.log(`[Cache] SET: "${query}" (${mode})`);
+  if (logger) {
+    logger.debug("Cache SET", { query, mode, metadata: { entries: searchCache.size } });
+  } else {
+    console.log(`[Cache] SET: "${query}" (${mode})`);
+  }
 }
 
 /**

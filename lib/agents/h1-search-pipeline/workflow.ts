@@ -14,6 +14,7 @@ import type { SearchPipelineState } from "./types";
 import { queryTranslatorNode } from "./query-translator";
 import { scoutNode } from "./scout";
 import { screenerNode } from "./screener";
+import { getCachedResult, setCachedResult } from "./cache";
 
 /**
  * LangGraph State Annotation
@@ -72,13 +73,25 @@ export function createSearchPipelineWorkflow() {
  *
  * @param userQuery - Natural language search query
  * @param searchMode - Search mode (focused/balanced/exploratory)
+ * @param timeoutMs - Maximum execution time in milliseconds (default: 90000ms = 90s)
+ * @param useCache - Whether to use cache (default: true)
  * @returns Final state with Top 10 repositories
  */
 export async function executeSearchPipeline(
   userQuery: string,
-  searchMode: SearchPipelineState["searchMode"] = "balanced"
+  searchMode: SearchPipelineState["searchMode"] = "balanced",
+  timeoutMs: number = 90000,
+  useCache: boolean = true
 ): Promise<SearchPipelineState> {
   const startTime = Date.now();
+
+  // Check cache first
+  if (useCache) {
+    const cached = getCachedResult(userQuery, searchMode);
+    if (cached) {
+      return cached;
+    }
+  }
 
   // Initialize state
   const initialState: Partial<SearchPipelineState> = {
@@ -90,17 +103,42 @@ export async function executeSearchPipeline(
   };
 
   try {
-    // Create and invoke workflow
+    // Create workflow
     const app = createSearchPipelineWorkflow();
-    const result = await app.invoke(initialState);
+
+    // Execute with timeout
+    const result = await Promise.race([
+      app.invoke(initialState),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Search pipeline timed out")), timeoutMs)
+      ),
+    ]);
 
     // Calculate total execution time
     const totalTime = Date.now() - startTime;
     result.executionTime.total = totalTime;
 
-    return result as SearchPipelineState;
+    const finalResult = result as SearchPipelineState;
+
+    // Cache successful results
+    if (useCache && finalResult.topRepos && finalResult.topRepos.length > 0) {
+      setCachedResult(userQuery, searchMode, finalResult);
+    }
+
+    return finalResult;
   } catch (error) {
-    // Handle catastrophic pipeline failure
-    throw new Error(`Search pipeline failed: ${error instanceof Error ? error.message : String(error)}`);
+    const elapsedTime = Date.now() - startTime;
+
+    // Check if it was a timeout
+    if (error instanceof Error && error.message.includes("timed out")) {
+      throw new Error(
+        `Search pipeline timed out after ${elapsedTime}ms (limit: ${timeoutMs}ms). Try a more specific query.`
+      );
+    }
+
+    // Handle other pipeline failures
+    throw new Error(
+      `Search pipeline failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }

@@ -122,6 +122,7 @@ function buildSearchQuery(params: SearchParams, strategy: SearchStrategy): strin
 /**
  * Convert GitHub API response to our Repository type
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertToRepository(item: any): Repository {
   return {
     full_name: item.full_name,
@@ -173,22 +174,23 @@ async function searchWithStrategy(
 
     // Convert to our Repository type
     return response.data.items.map(convertToRepository);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { status?: number; message?: string };
     // Handle specific GitHub API errors
-    if (error.status === 403 && error.message?.includes("rate limit")) {
+    if (err.status === 403 && err.message?.includes("rate limit")) {
       throw new Error(
         "GitHub API rate limit exceeded. Please wait a few minutes and try again."
       );
     }
 
-    if (error.status === 422) {
+    if (err.status === 422) {
       throw new Error(
         `Invalid GitHub search query. Please refine your search terms.`
       );
     }
 
     // Re-throw other errors
-    throw new Error(`GitHub search failed: ${error.message}`);
+    throw new Error(`GitHub search failed: ${err.message || String(error)}`);
   }
 }
 

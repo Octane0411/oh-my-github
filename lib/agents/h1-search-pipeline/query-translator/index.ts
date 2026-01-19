@@ -103,7 +103,7 @@ function buildSystemPrompt(searchMode: SearchMode): string {
   return `You are a query translator for GitHub repository search.
 
 Your task:
-1. Extract primary keywords from the user query (3-6 words max)
+1. Extract primary keywords from the user query (3-6 words max). Translate generic terms (e.g., '插件' -> 'plugin', '教程' -> 'tutorial') into English, but keep proper nouns (e.g., 'openCode', 'DeepSeek') as is.
 2. Generate expanded_keywords based on search mode: ${expansionGuidance[searchMode]}
 3. Infer programming language if mentioned (return undefined if not clear)
 4. Infer star range based on POPULARITY/MATURITY only (independent of search mode):

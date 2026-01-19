@@ -57,6 +57,7 @@ export async function callLLMWithTimeout(
 
   try {
     // Build request options
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const requestOptions: any = {
       model: getModelName(),
       messages,

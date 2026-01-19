@@ -23,6 +23,109 @@
 - **AI**: DeepSeek V3
 - **Infrastructure**: Vercel, Upstash Redis
 
+## 🤖 Agent Coordinator
+
+The Agent Coordinator is a conversational AI system that orchestrates specialized agents to handle different tasks:
+
+### Architecture
+
+```
+User Message → Coordinator
+                   ↓
+           [Intent Classifier] (DeepSeek V3)
+                   ↓
+         ┌─────────┼──────────┐
+         ↓         ↓          ↓
+   [Search Team] [Auditor] [Comparator] ...
+                   ↓
+           [Synthesizer]
+                   ↓
+        SSE Stream → Frontend
+```
+
+### API Endpoint: `/api/chat`
+
+**POST Request:**
+```json
+{
+  "message": "find React state management libraries",
+  "conversationId": "optional-uuid",
+  "history": []
+}
+```
+
+**Response:** Server-Sent Events (SSE) stream with the following event types:
+
+- `conversation_created` - New conversation initialized
+- `log` - Agent thinking steps and progress updates
+- `text` - Incremental text chunks of the final summary
+- `data` - Structured data (repository lists, comparisons, etc.)
+- `done` - Request completed with execution stats
+- `error` - Error occurred during processing
+
+**Example SSE Events:**
+```
+data: {"type":"conversation_created","conversationId":"abc-123"}
+
+data: {"type":"log","message":"Understanding your request...","agent":"coordinator"}
+
+data: {"type":"text","content":"I found **3 repositories** that match your search..."}
+
+data: {"type":"data","structuredData":{"type":"repo_list","items":[...]}}
+
+data: {"type":"done","stats":{"executionTime":8500}}
+```
+
+### Intent Classification
+
+The coordinator uses DeepSeek V3 to classify user messages into 5 intent types:
+
+- **search** - Find repositories matching criteria
+- **analyze** - Deep analysis of a specific repository
+- **compare** - Side-by-side comparison of multiple repos
+- **chat** - Conversational responses (acknowledgments, help)
+- **clarify** - Request clarification when intent is ambiguous
+
+**Confidence Threshold:** 0.7 (below this, routes to clarify)
+
+### Conversation Management
+
+- **Storage:** In-memory (Map-based)
+- **TTL:** 1 hour of inactivity
+- **History:** Last 20 messages preserved
+- **Context:** Last 3 messages used for intent classification
+
+### Features
+
+- **Multi-turn Conversations:** Maintain context across multiple queries
+- **Streaming Responses:** Real-time feedback via SSE
+- **Rate Limiting:** 100 requests/hour per IP
+- **Context Compression:** LLM-based summarization for large content
+- **Request Validation:** Zod schema validation for all inputs
+- **Error Handling:** Graceful degradation with fallback responses
+
+### Configuration
+
+Environment variables:
+```env
+# LLM Configuration (inherited from existing setup)
+DEEPSEEK_V3_API_KEY=sk-your_key_here
+```
+
+### Development
+
+Run tests:
+```bash
+bun test
+# or
+npm test
+```
+
+Check test coverage:
+```bash
+bun run test:coverage
+```
+
 ## 🚀 Getting Started
 
 ### Prerequisites

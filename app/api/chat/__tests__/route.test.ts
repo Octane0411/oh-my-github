@@ -408,22 +408,14 @@ describe('POST /api/chat', () => {
       };
 
       vi.mocked(createSSEResponse).mockImplementation(async (handler) => {
-<<<<<<< HEAD
         await handler(mockWriter as SSEWriter);
-=======
-        await handler(mockWriter as any);
->>>>>>> 5916c99cf4df4331ab74db875d01d91a97ef55cd
         return new Response();
       });
 
       const mockWorkflow = {
         invoke: vi.fn().mockRejectedValue(new Error('Workflow failed')),
       };
-<<<<<<< HEAD
       vi.mocked(createCoordinatorWorkflow).mockReturnValue(mockWorkflow as unknown as CompiledStateGraph);
-=======
-      vi.mocked(createCoordinatorWorkflow).mockReturnValue(mockWorkflow as any);
->>>>>>> 5916c99cf4df4331ab74db875d01d91a97ef55cd
 
       const request = new Request('http://localhost/api/chat', {
         method: 'POST',

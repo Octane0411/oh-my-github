@@ -91,71 +91,96 @@
 
 > **注意**: 此阶段可在最小化 UI 上开发和测试，无需等待完整 UI
 
-#### ✅ Proposal 4: `add-query-translator-agent`
+#### ✅ Proposal 4-6: `add-search-pipeline` (合并方案)
 - **优先级**: 🔴 P0 (必选)
-- **目标**: 实现"意图识别"Agent (The Query Translator)
+- **目标**: 实现完整的搜索和筛选流程（Query Translator + Scout + Screener）
+- **架构决策** (2026-01-15):
+  - LangGraph Sequential Pipeline
+  - 按需加载 Auditor（用户点击时触发）
+  - 多点并行执行（Scout 3策略、Screener 25个LLM）
+  - 两阶段筛选（规则粗筛 + LLM精筛）
 - **输出**:
-  - 自然语言 → GitHub 搜索参数转化引擎
+  - API: `/api/search` - 返回 Top 10 项目列表
+  - 多维度评分体系（6个维度 + 雷达图）
+  - 自然语言 → GitHub 搜索参数转化
   - 支持"发散程度"控制 (Low/Medium/High)
-  - 能处理创意级别动态扩展关键词
-  - 可在简单 UI 上测试（输入框 → Agent → 搜索参数）
+  - 多策略并行搜索（Stars、Updated、Expanded）
 - **涉及能力**:
-  - `agent-query-translator` - 意图识别 Agent
-  - `llm-integration` - LLM 调用（可选，初版用规则）
-- **预计耗时**: 1-2 天
-- **依赖**: Proposal 3
+  - `agent-query-translator` - LLM驱动的意图识别
+  - `agent-scout` - 多策略海选（3策略并行）
+  - `agent-screener` - 两阶段筛选（规则 + LLM）
+  - `multi-dimensional-scoring` - 6维度评分系统
+- **技术栈**:
+  - LangGraph.js (状态管理)
+  - DeepSeek V3 (LLM)
+  - GitHub REST API (数据源)
+  - Recharts (雷达图)
+- **预计耗时**: 3-4 天
+- **成本**: ~$0.02/次查询
+- **性能**: 8-10秒返回列表
+- **依赖**: Proposal 3 ✅
 - **状态**: 📝 未开始
+- **详细决策**: 参见 `/PROPOSAL_4_DECISIONS.md`
 
 ---
 
-#### ✅ Proposal 5: `add-scout-agent`
-- **优先级**: 🟠 P1 (核心功能)
-- **目标**: 实现"海选"Agent (The Scout)
-- **输出**:
-  - 用户输入关键词 → 返回 Top 50-100 候选项目
-  - 去重、清洗逻辑
-  - 简单列表展示（在现有 UI 上可测试）
-- **涉及能力**:
-  - `agent-scout` - 海选 Agent
-  - `state-management` - LangGraph 状态管理
-- **预计耗时**: 2 天
-- **依赖**: Proposal 4
-- **状态**: 📝 未开始
+#### ~~Proposal 5: `add-scout-agent`~~ (已合并到 Proposal 4-6)
+- **状态**: ✅ **已合并到 Proposal 4-6**
+- **理由**: Scout 与 Query Translator 和 Screener 形成完整的搜索 Pipeline，合并实现更高效
+- **原目标**: 实现"海选"Agent，多策略并行搜索
+- **新位置**: 在 Proposal 4-6 中作为第二个 Agent 实现
 
 ---
 
-#### ✅ Proposal 6: `add-screener-agent`
-- **优先级**: 🟠 P1 (核心功能)
-- **目标**: 实现"初筛"Agent (The Screener)
-- **输出**:
-  - 多维度打分系统 (活跃度 40% + 门槛 30% + 规模 30%)
-  - 从 50-100 个候选缩减到 Top 10
-  - 打分结果展示（可用简单表格展示）
-- **涉及能力**:
-  - `agent-screener` - 初筛 Agent
-  - `scoring-algorithm` - 加权打分逻辑
-- **预计耗时**: 2 天
-- **依赖**: Proposal 5
-- **状态**: 📝 未开始
+#### ~~Proposal 6: `add-screener-agent`~~ (已合并到 Proposal 4-6)
+- **状态**: ✅ **已合并到 Proposal 4-6**
+- **理由**: Screener 是搜索流程的关键环节，与 Scout 紧密耦合，合并实现避免接口反复调整
+- **原目标**: 实现"初筛"Agent，两阶段筛选（规则 + LLM）
+- **新位置**: 在 Proposal 4-6 中作为第三个 Agent 实现
+- **增强**: 增加了多维度评分体系（6个维度 + 雷达图）
 
 ---
 
 #### ✅ Proposal 7: `add-auditor-agent`
 - **优先级**: 🟠 P1 (核心功能)
 - **目标**: 实现"深度尽调"Agent (The Auditor)
+- **架构决策** (2026-01-15):
+  - **按需加载**: 仅在用户点击项目详情时触发
+  - **独立 API**: `/api/analyze-repo` (与搜索流程解耦)
+  - **集成 Star History**: 使用 OSS Insight API
 - **输出**:
-  - 代码库深度扫描 (README, CONTRIBUTING, 文件树, 依赖)
+  - API: `/api/analyze-repo` - 单个项目深度分析
+  - 代码库深度扫描 (README, CONTRIBUTING, 文件树, 依赖, Issues)
   - 生成结构化 Markdown 研报
-  - 包含: 上手指南 + 任务推荐 + 避坑提示
+  - **Star History 可视化**: K线图 + 增长趋势分析
+  - 包含: 上手指南 + 任务推荐 + 避坑提示 + 项目生命周期判断
 - **涉及能力**:
-  - `agent-auditor` - 深度分析 Agent
+  - `agent-auditor` - 深度分析 Agent (LLM驱动)
+  - `star-history-integration` - OSS Insight API 集成
   - `code-analysis` - 代码审计逻辑
-- **预计耗时**: 3-4 天
-- **依赖**: Proposal 6
+  - `visualization` - K线图绘制 (Recharts)
+- **技术栈**:
+  - DeepSeek V3 (报告生成)
+  - OSS Insight API (Star History 数据)
+  - GitHub REST API (详细信息)
+  - Recharts (K线图)
+- **预计耗时**: 2-3 天
+- **成本**: ~$0.005/次分析
+- **性能**: 5-7秒返回详情
+- **依赖**: Proposal 4-6 ✅
 - **状态**: 📝 未开始
+- **Star History 策略**:
+  - MVP: GitHub API 采样（内部使用，不展示）
+  - 详情页: OSS Insight API（完整K线图）
+  - 不包含: Trending 数据
 
 **🎯 Milestone 3: Multi-Agent 系统完成** (完成 Proposal 4-7 后达成)
-- 验收标准: 四层 Agent 完整工作，能从关键词搜索到最终深度报告
+- 验收标准:
+  - ✅ 用户输入自然语言 → 8-10秒返回 Top 10 项目列表
+  - ✅ 列表显示多维度评分（6维度 + 雷达图）
+  - ✅ 用户点击项目 → 5-7秒显示详细分析 + Star History K线图
+  - ✅ 按需加载，成本可控（~$0.02 列表 + $0.005 单个详情）
+  - ✅ 完整的搜索到深度报告闭环
 
 ---
 
@@ -302,12 +327,14 @@
 
 ### 最快路径 (MVP = Proposal 1-9)
 - 阶段 1: 2-4 天 ✅ **已完成**
-- 阶段 2: 1-2 天 🚧 **进行中**
-- 阶段 3: 8-10 天
-  - Proposal 4 (Query Translator): 1-2 天
-  - Proposal 5 (Scout): 2 天
-  - Proposal 6 (Screener): 2 天
-  - Proposal 7 (Auditor): 3-4 天
+- 阶段 2: 1-2 天 ✅ **已完成**
+- 阶段 3: 6-7 天 (更新后)
+  - Proposal 4-6 (搜索流程): 3-4 天
+    - Query Translator + Scout + Screener 合并实现
+    - 多维度评分体系
+  - Proposal 7 (Auditor + Star History): 2-3 天
+    - 按需加载架构
+    - OSS Insight API 集成
 - **阶段 4 (新增 UI 完善)**: 2-3 天
 - 阶段 5: 2-3 天（流式 UI，依赖阶段 4）
 - **总计**: 约 **15-22 天**

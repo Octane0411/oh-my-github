@@ -193,8 +193,8 @@ export async function POST(request: Request): Promise<NextResponse<SearchRespons
     const err = error instanceof Error ? error : new Error(String(error));
 
     logger.logError("Search pipeline error", err, {
-      query: (error as any).query,
-      mode: (error as any).mode,
+      query: (error as { query?: string }).query,
+      mode: (error as { mode?: string }).mode,
     });
 
     // Query translation failure

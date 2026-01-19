@@ -8,7 +8,6 @@
  * this can be easily swapped with Redis by implementing the same interface.
  */
 
-import { randomUUID } from "crypto";
 import type { Conversation, Message } from "./types";
 
 /**
@@ -55,7 +54,7 @@ export function createConversation(): string {
     }
   }
 
-  const id = randomUUID();
+  const id = crypto.randomUUID();
   const now = new Date();
 
   const conversation: Conversation = {

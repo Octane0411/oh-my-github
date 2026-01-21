@@ -1,6 +1,6 @@
 # Proposal 011: GitHub to Skills Pivot
 
-- **Status**: Draft
+- **Status**: Approved (MVP Scope Defined)
 - **Date**: 2026-01-21
 - **Priority**: Critical
 
@@ -20,29 +20,7 @@
 
 ### 2. Analysis Pipeline (Agent Screener) - 重构核心
 废弃原有的多维评分系统，引入 **Agent Compatibility Score (ACS)**。
-
-#### Agent Compatibility Score (ACS) 维度定义：
-
-1.  **Interface Clarity (接口清晰度)**
-    *   是否有 CLI？(CLI 是 Agent 最容易调用的接口)
-    *   是否有简单的 Python API？
-    *   *权重: High*
-
-2.  **Documentation Quality (文档可读性 - for AI)**
-    *   README 是否包含 "Usage" 或 "Example" 章节？(Agent 需要模仿 Usage 来生成指令)
-    *   是否有清晰的参数说明？
-    *   *权重: High*
-
-3.  **Environment Friendliness (环境友好度)**
-    *   依赖是否简单？(纯 Python/Node 最佳)
-    *   是否需要复杂的系统级依赖 (如 CUDA, GUI)？(Agent 环境通常是 Headless 的)
-    *   是否有 Dockerfile？
-    *   *权重: Medium*
-
-4.  **Token Economy (Token 经济性)**
-    *   核心逻辑文件大小是否适中？(太大的库 Agent 难以完全理解)
-    *   输出日志是否简洁？
-    *   *权重: Low*
+*   **Spec**: 详见 `docs/specs/acs-scoring-system.md`。
 
 ### 3. Generation Pipeline (Agent Synthesizer) - NEW
 *   **核心引擎**: 集成 Claude 官方的 "Skill-Creator Skill" (Meta-Skill)。
@@ -53,12 +31,14 @@
     *   `requirements.txt`: 经过精简的依赖列表。
 
 ## User Experience (UX)
-1.  用户输入: "我需要一个能下载 YouTube 视频的工具"
-2.  Agent (Scout): 搜索并计算 ACS，推荐 `yt-dlp` (ACS: 95/100, 强 CLI 支持, 文档清晰)。
-3.  用户: "好的，把它变成 Skill。"
-4.  Agent (Synthesizer): 调用 Meta-Skill，生成 `yt-dlp-skill.zip`。
-5.  用户: 下载并解压使用。
+*   **Prototype**: `prototype_skill_factory.html` (已确认)
+*   **Flow**:
+    1.  **Discovery**: 用户输入需求，系统展示带有 ACS 评分的仓库卡片。
+    2.  **Negotiation**: 用户确认转换。
+    3.  **Fabrication**: 系统展示生成过程日志（Terminal 风格）。
+    4.  **Delivery**: 提供 Zip 下载。
 
 ## Next Steps
-1.  设计 ACS 的具体评分算法（Prompt-based Evaluation）。
-2.  获取并研究 Claude 官方 Skill-Creator Skill 的工作原理。
+1.  **Frontend**: 基于原型实现 Next.js 页面。
+2.  **Backend**: 实现 ACS 评分 Agent。
+3.  **Integration**: 等待 Claude 官方 Skill-Creator 详细信息，集成到 Synthesizer。

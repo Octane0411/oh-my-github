@@ -21,43 +21,49 @@
 
 ---
 
-### Phase 5: The Factory Interface (Chat UI) 🚀 Ready for Implementation
-*The conversational interface where users negotiate with the Agent to build skills.*
-- **Proposal**: `009-chat-ui-draft` / `upgrade-to-chat-ui`
-- **Prototype**: `prototype_skill_factory.html` (Approved MVP)
-- **Goal**: Implement the React/Next.js version of the approved prototype.
-- **Key Features**:
-  - Streaming Chat (Perplexity-style)
-  - ACS Score Visualization
-  - Skill Generation Progress Logs (Terminal style)
-  - Download Artifacts
-
----
-
-### Phase 6: Intelligent Discovery (P0) 🔴 Next Focus
+### Phase 5: Intelligent Discovery (Backend) 🔴 Next Focus
 *Finding repositories that can be turned into skills.*
 - **Proposal**: `011-github-to-skills`
 - **Spec**: `docs/specs/acs-scoring-system.md` (Completed)
-- **Goal**: Optimize the Search Agent to prioritize "tool-like" repos and implement ACS scoring.
+- **Architecture**: **Supervisor (Vercel AI SDK) + Sub-Graph (LangGraph)**
+- **Goal**: Build the "Consultant" supervisor and the "Discovery" sub-graph.
 - **Key Tasks**:
-  - [ ] **Scout Upgrade**: Prioritize `setup.py`, `requirements.txt`, `cli.py`.
-  - [ ] **ACS Implementation**: Implement the LLM-based scoring logic defined in the spec.
-  - [ ] **UI Integration**: Display ACS badges in search results.
+  - [ ] **New Pipeline**: Create `lib/agents/h2-skill-discovery` (separate from h1).
+  - [ ] **Consultant Agent (Supervisor)**: Implement the outer loop using Vercel AI SDK `streamText` with Tool Calling.
+  - [ ] **Discovery Pipeline (Sub-Graph)**: Encapsulate the Scout & Screener logic into a callable LangGraph tool.
+  - [ ] **ACS Implementation**: Implement the LLM-based scoring logic as a node in the Discovery Graph.
 
 ---
 
-### Phase 7: The Skill Fabricator (P1) 🟠 Planned
+### Phase 6: The Factory Interface (Frontend) 🟠 Planned
+*The conversational interface where users negotiate with the Agent to build skills.*
+- **Proposal**: `009-chat-ui-draft` / `upgrade-to-chat-ui`
+- **Prototype**: `prototype_skill_factory.html` (Approved MVP)
+- **Spec**: `docs/specs/ui-skill-factory.md` (Revised)
+- **Goal**: Implement the React/Next.js version of the approved prototype.
+- **Key Features**:
+  - **Consultation Mode**: Multi-turn chat to clarify user intent.
+  - **Direct Fabrication**: Shortcut to generate skills directly from URLs.
+  - **Streaming Chat**: Perplexity-style interaction.
+  - **ACS Score Visualization**: Display compatibility scores.
+  - **Skill Generation Progress Logs**: Terminal style feedback.
+
+---
+
+### Phase 7: The Skill Fabricator (Backend) 🟡 Future
 *The core engine that generates the Skill artifacts.*
 - **Proposal**: `011-github-to-skills`
-- **Goal**: Generate `SKILL.md` and wrapper scripts automatically.
+- **Architecture**: **Sub-Graph (LangGraph)**
+- **Goal**: Build the "Fabrication" sub-graph tool.
 - **Key Tasks**:
-  - [ ] **Meta-Skill Integration**: Integrate Claude's official "Skill-Creator Skill" logic.
-  - [ ] **Synthesizer Upgrade**: Generate `SKILL.md` based on README usage patterns.
+  - [ ] **New Pipeline**: Create `lib/agents/h3-skill-fabrication`.
+  - [ ] **Fabrication Pipeline**: Create a new LangGraph for the build process (Reader -> Synthesizer -> Packager).
+  - [ ] **Meta-Skill Integration**: Integrate Claude's official "Skill-Creator Skill" logic into the Synthesizer node.
   - [ ] **Artifact Packager**: Implement Zip export functionality.
 
 ---
 
-### Phase 8: The Skill Store (P2) 🟡 Future
+### Phase 8: The Skill Store (P2) ⚪ Future
 *A repository of pre-built, high-quality skills.*
 - **Goal**: "DeepWiki" style showcase for popular tools.
 - **Key Tasks**:
@@ -70,10 +76,10 @@
 
 | Phase | Focus | Est. Time | Status |
 |-------|-------|-----------|--------|
-| **5. Chat UI** | Frontend Implementation | 3-4 Days | 🚀 Ready |
-| **6. Discovery** | ACS Scoring Logic | 2 Days | 🔴 Next |
-| **7. Fabricator** | Skill Generation | 3-4 Days | 🟠 Planned |
+| **5. Discovery** | Supervisor + Discovery Graph | 2-3 Days | 🔴 Next |
+| **6. Chat UI** | Frontend Implementation | 3-4 Days | 🟠 Planned |
+| **7. Fabricator** | Fabrication Graph | 3-4 Days | 🟡 Future |
 
 ## 🚀 Immediate Next Steps
-1. **Frontend**: Start implementing `prototype_skill_factory.html` in Next.js.
-2. **Backend**: Implement the ACS Scoring Agent (Phase 6).
+1. **Backend**: Create `lib/agents/h2-skill-discovery` and implement the Discovery Pipeline.
+2. **Backend**: Implement the **Consultant Agent** (Supervisor) to call the new pipeline.

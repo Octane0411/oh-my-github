@@ -239,7 +239,7 @@ Detailed tasks are in `tasks.md`.
    - **Decision**: Yes, but with query-dependent relevance scores uncached
 
 ## Approval Checklist
-- [ ] Proposal reviewed by project lead
-- [ ] Spec deltas created for new capabilities
-- [ ] Tasks broken down into verifiable steps
-- [ ] `openspec validate implement-skill-discovery --strict` passes
+- [x] Proposal reviewed by project lead
+- [x] Spec deltas created for new capabilities
+- [x] Tasks broken down into verifiable steps
+- [x] `openspec validate implement-skill-discovery --strict` passes

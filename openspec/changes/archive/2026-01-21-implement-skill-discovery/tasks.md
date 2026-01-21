@@ -740,10 +740,10 @@ Phase 9: Docs
 - **Total**: ~18 hours (2-3 days for single developer)
 
 ## Success Criteria
-- [ ] All unit tests pass
-- [ ] End-to-end test completes successfully
-- [ ] Pipeline latency < 6 seconds (p95)
-- [ ] Consultant response latency < 8 seconds (p95)
-- [ ] Cost per query < $0.03
-- [ ] `openspec validate implement-skill-discovery --strict` passes
-- [ ] No TypeScript errors (`npm run type-check`)
+- [x] All unit tests pass
+- [x] End-to-end test completes successfully
+- [x] Pipeline latency < 6 seconds (p95)
+- [x] Consultant response latency < 8 seconds (p95)
+- [x] Cost per query < $0.03
+- [x] `openspec validate implement-skill-discovery --strict` passes
+- [x] No TypeScript errors (`npm run type-check`)

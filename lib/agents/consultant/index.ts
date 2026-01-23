@@ -57,8 +57,9 @@ export async function processConsultantQuery(
 
   try {
     // Call LLM with function calling
+    const model = process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-4o-mini";
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       messages,
       temperature: 0.7,
       max_tokens: 1000,
@@ -137,7 +138,7 @@ export async function processConsultantQuery(
       ];
 
       const secondResponse = await client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model,
         messages: secondMessages,
         temperature: 0.7,
         max_tokens: 1000,

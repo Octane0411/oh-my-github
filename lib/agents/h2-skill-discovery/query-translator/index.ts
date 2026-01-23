@@ -30,10 +30,18 @@ export async function queryTranslatorNode(
     // Call LLM with 5-second timeout
     const response = await callLLMWithTimeout(client, messages, model, 5000);
 
+    // Clean response: remove markdown code blocks if present
+    let cleanedResponse = response.trim();
+    if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse
+        .replace(/^```(?:json)?\s*\n/, '') // Remove opening ```json or ```
+        .replace(/\n```\s*$/, '');          // Remove closing ```
+    }
+
     // Parse JSON response
     let searchParams: SearchParams;
     try {
-      const parsed = JSON.parse(response);
+      const parsed = JSON.parse(cleanedResponse);
       searchParams = {
         keywords: parsed.keywords || [],
         expanded_keywords: parsed.expanded_keywords || [],

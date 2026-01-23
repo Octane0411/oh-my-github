@@ -14,16 +14,19 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@langchain/langgraph": "^0.2.31",
+    "@ai-sdk/openai": "^1.0.0",
     "@langchain/core": "^0.3.32",
+    "@langchain/langgraph": "^0.2.31",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
     "@radix-ui/react-slot": "^1.2.4",
+    "ai": "^4.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lru-cache": "^11.0.2",
     "lucide-react": "^0.562.0",
     "next": "^15.1.6",
+    "next-themes": "^0.4.6",
     "openai": "^4.77.3",
     "p-limit": "^6.1.0",
     "react": "^19.0.0",
@@ -32,7 +35,8 @@
     "recharts": "^2.15.0",
     "remark-gfm": "^4.0.0",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/bun": "latest",

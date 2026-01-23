@@ -174,12 +174,23 @@ export async function evaluateRepository(
     // Call LLM with 8-second timeout
     const response = await callLLMWithTimeout(client, messages, model, 8000);
 
+    // Clean response: remove markdown code blocks if present
+    let cleanedResponse = response.trim();
+
+    // Remove ```json ... ``` or ``` ... ``` blocks
+    if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse
+        .replace(/^```(?:json)?\s*\n/, '') // Remove opening ```json or ```
+        .replace(/\n```\s*$/, '');          // Remove closing ```
+    }
+
     // Parse JSON response
     let parsed: unknown;
     try {
-      parsed = JSON.parse(response);
+      parsed = JSON.parse(cleanedResponse);
     } catch (parseError) {
       console.error(`Failed to parse ACS response for ${repo.full_name}:`, parseError);
+      console.error(`Raw response:`, response.substring(0, 200));
       return {
         acsScore: getDefaultACSScore("JSON parse error"),
         reasoning: "Evaluation failed: invalid JSON response",

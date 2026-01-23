@@ -30,10 +30,10 @@ export function createLLMClient() {
 export function getModelName(component: "translator" | "screener"): string {
   if (component === "translator") {
     // Use faster model for query translation
-    return process.env.OPENAI_API_KEY ? "gpt-4o-mini" : "deepseek-chat";
+    return process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-4o-mini";
   }
   // Use more capable model for ACS evaluation
-  return "deepseek-chat";
+  return process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-4o-mini";
 }
 
 /**

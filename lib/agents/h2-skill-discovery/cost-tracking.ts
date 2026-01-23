@@ -21,7 +21,7 @@ export function trackLLMCost(
   inputTokens: number,
   outputTokens: number
 ): number {
-  const pricing = PRICING[modelName as keyof typeof PRICING] || PRICING["gpt-4o-mini"];
+  const pricing = PRICING[modelName as keyof typeof PRICING] || PRICING["deepseek-chat"];
   return inputTokens * pricing.input + outputTokens * pricing.output;
 }
 

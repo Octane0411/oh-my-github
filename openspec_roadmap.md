@@ -21,23 +21,22 @@
 
 ---
 
-### Phase 5: Intelligent Discovery (Backend) 🔴 Next Focus
+### Phase 5: Intelligent Discovery (Backend) ✅ Completed
 *Finding repositories that can be turned into skills.*
 - **Proposal**: `011-github-to-skills`
 - **Spec**: `docs/specs/acs-scoring-system.md` (Completed)
 - **Architecture**: **Supervisor (Vercel AI SDK) + Sub-Graph (LangGraph)**
 - **Goal**: Build the "Consultant" supervisor and the "Discovery" sub-graph.
 - **Key Tasks**:
-  - [ ] **New Pipeline**: Create `lib/agents/h2-skill-discovery` (separate from h1).
-  - [ ] **Consultant Agent (Supervisor)**: Implement the outer loop using Vercel AI SDK `streamText` with Tool Calling.
-  - [ ] **Discovery Pipeline (Sub-Graph)**: Encapsulate the Scout & Screener logic into a callable LangGraph tool.
-  - [ ] **ACS Implementation**: Implement the LLM-based scoring logic as a node in the Discovery Graph.
+  - [x] **New Pipeline**: Create `lib/agents/h2-skill-discovery` (separate from h1).
+  - [x] **Consultant Agent (Supervisor)**: Implement the outer loop using Vercel AI SDK `streamText` with Tool Calling.
+  - [x] **Discovery Pipeline (Sub-Graph)**: Encapsulate the Scout & Screener logic into a callable LangGraph tool.
+  - [x] **ACS Implementation**: Implement the LLM-based scoring logic as a node in the Discovery Graph.
 
 ---
 
-### Phase 6: The Factory Interface (Frontend) 🟠 Planned
+### Phase 6: The Factory Interface (Frontend) 🔴 Next Focus
 *The conversational interface where users negotiate with the Agent to build skills.*
-- **Proposal**: `009-chat-ui-draft` / `upgrade-to-chat-ui`
 - **Prototype**: `prototype_skill_factory.html` (Approved MVP)
 - **Spec**: `docs/specs/ui-skill-factory.md` (Revised)
 - **Goal**: Implement the React/Next.js version of the approved prototype.
@@ -76,10 +75,10 @@
 
 | Phase | Focus | Est. Time | Status |
 |-------|-------|-----------|--------|
-| **5. Discovery** | Supervisor + Discovery Graph | 2-3 Days | 🔴 Next |
-| **6. Chat UI** | Frontend Implementation | 3-4 Days | 🟠 Planned |
+| **5. Discovery** | Supervisor + Discovery Graph | 2-3 Days | ✅ Done |
+| **6. Chat UI** | Frontend Implementation | 3-4 Days | 🔴 Next |
 | **7. Fabricator** | Fabrication Graph | 3-4 Days | 🟡 Future |
 
 ## 🚀 Immediate Next Steps
-1. **Backend**: Create `lib/agents/h2-skill-discovery` and implement the Discovery Pipeline.
-2. **Backend**: Implement the **Consultant Agent** (Supervisor) to call the new pipeline.
+1. **Frontend**: Implement the **Chat UI** based on `prototype_skill_factory.html`.
+2. **Frontend**: Integrate the Chat UI with the Consultant Agent API.

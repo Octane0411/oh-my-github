@@ -85,7 +85,7 @@ export async function POST(request: Request) {
           acsScore: scored.acsScore.total,
           recommendation: scored.acsScore.recommendation,
           skillStrategy: scored.acsScore.skill_strategy,
-          reasoning: scored.reasoning,
+          reasoningText: scored.reasoningText,
           breakdown: scored.acsScore.breakdown,
         })),
         metadata: {

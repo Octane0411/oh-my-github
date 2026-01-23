@@ -31,7 +31,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.95,
-        reasoning: 'User wants to find repositories',
+        reasoningText: 'User wants to find repositories',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -56,7 +56,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'analyze',
         confidence: 0.88,
-        reasoning: 'User wants detailed analysis',
+        reasoningText: 'User wants detailed analysis',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -79,7 +79,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'compare',
         confidence: 0.92,
-        reasoning: 'User wants to compare repositories',
+        reasoningText: 'User wants to compare repositories',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -101,7 +101,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'chat',
         confidence: 0.99,
-        reasoning: 'User is acknowledging',
+        reasoningText: 'User is acknowledging',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -125,7 +125,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.65,
-        reasoning: 'Intent is ambiguous',
+        reasoningText: 'Intent is ambiguous',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -149,7 +149,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.7,
-        reasoning: 'Exactly at threshold',
+        reasoningText: 'Exactly at threshold',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -172,7 +172,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'analyze',
         confidence: 0.71,
-        reasoning: 'Slightly above threshold',
+        reasoningText: 'Slightly above threshold',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -200,7 +200,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.9,
-        reasoning: 'Clear intent',
+        reasoningText: 'Clear intent',
       };
 
       vi.spyOn(conversationManager, 'getHistory').mockReturnValue(mockHistory);
@@ -228,7 +228,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.9,
-        reasoning: 'Clear intent',
+        reasoningText: 'Clear intent',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -260,7 +260,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'analyze',
         confidence: 0.85,
-        reasoning: 'Following up on previous search',
+        reasoningText: 'Following up on previous search',
       };
 
       vi.spyOn(conversationManager, 'getHistory').mockReturnValue(mockHistory);
@@ -359,7 +359,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.9,
-        reasoning: 'Clear intent',
+        reasoningText: 'Clear intent',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -389,7 +389,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.95,
-        reasoning: 'Clear search intent',
+        reasoningText: 'Clear search intent',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);
@@ -422,7 +422,7 @@ describe('Coordinator Node', () => {
       const mockClassification: IntentClassification = {
         intent: 'search',
         confidence: 0.6,
-        reasoning: 'Ambiguous',
+        reasoningText: 'Ambiguous',
       };
 
       vi.spyOn(intentClassifier, 'classifyIntent').mockResolvedValue(mockClassification);

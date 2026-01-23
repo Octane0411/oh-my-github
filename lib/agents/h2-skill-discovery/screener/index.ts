@@ -38,12 +38,12 @@ async function processBatch(
         const context = await fetchRepositoryContext(octokit, repo);
 
         // Evaluate with ACS
-        const { acsScore, reasoning } = await evaluateRepository(repo, context);
+        const { acsScore, reasoningText } = await evaluateRepository(repo, context);
 
         return {
           repo,
           acsScore,
-          reasoning,
+          reasoningText,
         };
       } catch (error) {
         console.error(`Failed to evaluate ${repo.full_name}:`, error);
@@ -61,7 +61,7 @@ async function processBatch(
             recommendation: "NOT_RECOMMENDED" as const,
             skill_strategy: "MANUAL_REQUIRED" as const,
           },
-          reasoning: `Evaluation failed: ${(error as Error).message}`,
+          reasoningText: `Evaluation failed: ${(error as Error).message}`,
         };
       }
     })

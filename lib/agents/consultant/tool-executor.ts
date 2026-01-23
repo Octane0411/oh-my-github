@@ -11,8 +11,40 @@ export interface ToolEvent {
   type: 'log' | 'progress' | 'result' | 'error';
   tool: string;
   message: string;
-  data?: any;
+  data?: unknown;
   timestamp: number;
+}
+
+export interface FindRepositoryResult {
+  success: boolean;
+  repositories: Array<{
+    rank: number;
+    isTopChoice: boolean;
+    fullName: string;
+    description: string | null;
+    stars: number;
+    language: string | null;
+    url: string;
+    acsScore: {
+      total: number;
+      interface: number;
+      documentation: number;
+      complexity: number;
+    };
+    recommendation: string;
+    skillStrategy: string;
+    reasoningText: string;
+  }>;
+  summary: string;
+  cost?: number;
+}
+
+export interface GenerateSkillResult {
+  success: boolean;
+  status: string;
+  message: string;
+  details?: string[];
+  repoUrl?: string;
 }
 
 export type ToolEventCallback = (event: ToolEvent) => void;
@@ -23,7 +55,7 @@ export type ToolEventCallback = (event: ToolEvent) => void;
 export async function executeFindRepositoryWithEvents(
   params: FindRepositoryParams,
   onEvent: ToolEventCallback
-): Promise<any> {
+): Promise<FindRepositoryResult> {
   const h2Emitter = new H2EventEmitter();
 
   // Subscribe to H2 events and forward them
@@ -45,26 +77,36 @@ export async function executeFindRepositoryWithEvents(
       case 'scout:start':
         message = '🔍 Scouting GitHub repositories...';
         break;
-      case 'scout:searching':
-        message = `🔎 Searching with ${h2Event.data?.strategy || 'multi-strategy'} approach`;
+      case 'scout:searching': {
+        const data = h2Event.data as { strategy?: string } | undefined;
+        message = `🔎 Searching with ${data?.strategy || 'multi-strategy'} approach`;
         type = 'progress';
         break;
-      case 'scout:complete':
-        message = `✅ Found ${h2Event.data?.count || 0} candidate repositories`;
+      }
+      case 'scout:complete': {
+        const data = h2Event.data as { count?: number } | undefined;
+        message = `✅ Found ${data?.count || 0} candidate repositories`;
         break;
+      }
       case 'screener:start':
         message = '📊 Evaluating repositories with ACS scoring...';
         break;
-      case 'screener:evaluating':
-        message = `📈 Evaluating ${h2Event.data?.repo || 'repository'} (${h2Event.data?.progress || 0}/${h2Event.data?.total || 0})`;
+      case 'screener:evaluating': {
+        const data = h2Event.data as { repo?: string; progress?: number; total?: number } | undefined;
+        message = `📈 Evaluating ${data?.repo || 'repository'} (${data?.progress || 0}/${data?.total || 0})`;
         type = 'progress';
         break;
-      case 'screener:complete':
-        message = `✅ Screening complete: ${h2Event.data?.count || 0} suitable repositories`;
+      }
+      case 'screener:complete': {
+        const data = h2Event.data as { count?: number } | undefined;
+        message = `✅ Screening complete: ${data?.count || 0} suitable repositories`;
         break;
-      case 'workflow:complete':
-        message = `🎉 Discovery completed in ${((h2Event.data?.duration || 0) / 1000).toFixed(2)}s`;
+      }
+      case 'workflow:complete': {
+        const data = h2Event.data as { duration?: number } | undefined;
+        message = `🎉 Discovery completed in ${((data?.duration || 0) / 1000).toFixed(2)}s`;
         break;
+      }
       case 'workflow:error':
       case 'translator:error':
       case 'scout:error':
@@ -118,29 +160,47 @@ export async function executeFindRepositoryWithEvents(
       return noResultsData;
     }
 
-    // Build result
+    // Build result with rich context for LLM
     const resultData = {
       success: true,
-      repositories: top5.map((scored) => ({
+      repositories: top5.map((scored, index) => ({
+        rank: index + 1,
+        isTopChoice: index === 0,
         fullName: scored.repo.full_name,
         description: scored.repo.description,
         stars: scored.repo.stars,
         language: scored.repo.language,
         url: scored.repo.html_url,
-        acsScore: scored.acsScore.total,
-        interface: scored.acsScore.breakdown.interface_clarity,
-        documentation: scored.acsScore.breakdown.documentation,
-        complexity: scored.acsScore.breakdown.token_economy,
+        acsScore: {
+          total: scored.acsScore.total,
+          interface: scored.acsScore.breakdown.interface_clarity,
+          documentation: scored.acsScore.breakdown.documentation,
+          complexity: scored.acsScore.breakdown.token_economy,
+        },
         recommendation: scored.acsScore.recommendation,
         skillStrategy: scored.acsScore.skill_strategy,
-        reasoning: scored.reasoning,
+        reasoningText: scored.reasoningText,
       })),
-      summary: `Found ${top5.length} repositories:\n${top5
+      summary: `Found ${top5.length} repositories ranked by ACS score.
+
+🎯 TOP RECOMMENDATION:
+1. ${top5[0]!.repo.full_name} (⭐ ${top5[0]!.repo.stars}, ACS: ${top5[0]!.acsScore.total}/100)
+   ${top5[0]!.repo.description || 'No description'}
+   Recommendation: ${top5[0]!.acsScore.recommendation}
+   Why: ${top5[0]!.reasoningText}
+
+${top5.length > 1 ? `📋 ALTERNATIVES (with different trade-offs):\n${top5
+        .slice(1)
         .map(
           (r, i) =>
-            `${i + 1}. ${r.repo.full_name} (ACS: ${r.acsScore.total}/100 - ${r.acsScore.recommendation})`
+            `${i + 2}. ${r.repo.full_name} (⭐ ${r.repo.stars}, ACS: ${r.acsScore.total}/100)
+   ${r.repo.description || 'No description'}
+   Recommendation: ${r.acsScore.recommendation}
+   Key differentiator: ${r.reasoningText}`
         )
-        .join("\n")}`,
+        .join("\n\n")}` : ''}
+
+IMPORTANT: Present the TOP recommendation as the main choice. Only mention alternatives if they offer DIFFERENT trade-offs (e.g., simpler API, better docs, different features).`,
       cost: result.costTracking?.estimatedCost || 0,
     };
 
@@ -178,7 +238,7 @@ export async function executeFindRepositoryWithEvents(
 export async function executeGenerateSkillWithEvents(
   params: GenerateSkillParams,
   onEvent: ToolEventCallback
-): Promise<any> {
+): Promise<GenerateSkillResult> {
   // Validate GitHub URL format
   const githubUrlPattern = /^https:\/\/github\.com\/[\w-]+\/[\w-]+\/?$/;
   if (!githubUrlPattern.test(params.repoUrl)) {

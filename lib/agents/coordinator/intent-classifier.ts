@@ -135,7 +135,7 @@ Classify the intent and return JSON only.`;
     return {
       intent: "clarify",
       confidence: 0.0,
-      reasoning: `Failed to classify intent: ${errorMessage}`,
+      reasoningText: `Failed to classify intent: ${errorMessage}`,
     };
   }
 }
@@ -172,7 +172,7 @@ function parseClassificationResponse(response: string): IntentClassification {
     return {
       intent: parsed.intent,
       confidence,
-      reasoning: parsed.reasoning || "No reasoning provided",
+      reasoningText: parsed.reasoningText || "No reasoning provided",
     };
   } catch {
     // Parsing failed, return clarify with low confidence
@@ -180,7 +180,7 @@ function parseClassificationResponse(response: string): IntentClassification {
     return {
       intent: "clarify",
       confidence: 0.0,
-      reasoning: "Failed to parse LLM response",
+      reasoningText: "Failed to parse LLM response",
     };
   }
 }

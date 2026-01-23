@@ -163,7 +163,7 @@ function validateACSScore(parsed: unknown): ACSScore {
 export async function evaluateRepository(
   repo: Repository,
   context: RepositoryContext
-): Promise<{ acsScore: ACSScore; reasoning: string }> {
+): Promise<{ acsScore: ACSScore; reasoningText: string }> {
   const client = createLLMClient();
   const model = getModelName("screener");
 
@@ -193,7 +193,7 @@ export async function evaluateRepository(
       console.error(`Raw response:`, response.substring(0, 200));
       return {
         acsScore: getDefaultACSScore("JSON parse error"),
-        reasoning: "Evaluation failed: invalid JSON response",
+        reasoningText: "Evaluation failed: invalid JSON response",
       };
     }
 
@@ -218,14 +218,14 @@ export async function evaluateRepository(
 
     return {
       acsScore,
-      reasoning: reasoning || "No detailed reasoning provided",
+      reasoningText: reasoning || "No detailed reasoning provided",
     };
   } catch (error) {
     console.error(`ACS evaluation error for ${repo.full_name}:`, error);
 
     return {
       acsScore: getDefaultACSScore("Evaluation timeout or error"),
-      reasoning: `Evaluation failed: ${(error as Error).message}`,
+      reasoningText: `Evaluation failed: ${(error as Error).message}`,
     };
   }
 }

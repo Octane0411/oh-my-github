@@ -95,7 +95,7 @@ export function SkillDeliveryCard({ artifact, onDownload, onReset }: SkillDelive
         {/* Follow-up Actions */}
         <div className="pt-4 border-t border-border space-y-3">
           <h4 className="text-sm font-semibold text-foreground">
-            What's next?
+            What&apos;s next?
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button

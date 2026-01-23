@@ -10,6 +10,33 @@ import { trackLLMCost, estimateTokens } from "../cost-tracking";
 import { buildQueryTranslatorPrompt } from "./prompts";
 
 /**
+ * Extract core keywords from a query (fallback strategy)
+ * 
+ * Filters out common words and focuses on meaningful technical terms
+ */
+function extractCoreKeywords(query: string, language?: string): string[] {
+  // Common stop words to filter out
+  const stopWords = new Set([
+    'i', 'need', 'want', 'find', 'get', 'a', 'an', 'the', 'to', 'for', 'of', 'in', 'on',
+    'with', 'from', 'that', 'this', 'can', 'could', 'should', 'would', 'and', 'or',
+    'skill', 'tool', 'library', 'package', 'wrapper', 'api', 'help', 'me'
+  ]);
+
+  // Split query and filter
+  const words = query
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, ' ') // Keep hyphens, remove other punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.has(word));
+
+  // If language is specified, add it to keywords
+  const keywords = language ? [language, ...words] : words;
+
+  // Return top 3-5 most relevant keywords
+  return keywords.slice(0, 5);
+}
+
+/**
  * Query Translator LangGraph Node
  */
 export async function queryTranslatorNode(
@@ -27,8 +54,8 @@ export async function queryTranslatorNode(
 
     const messages = [{ role: "user" as const, content: prompt }];
 
-    // Call LLM with 5-second timeout
-    const response = await callLLMWithTimeout(client, messages, model, 5000);
+    // Call LLM with 10-second timeout (increased from 5s)
+    const response = await callLLMWithTimeout(client, messages, model, 10000);
 
     // Clean response: remove markdown code blocks if present
     let cleanedResponse = response.trim();
@@ -51,18 +78,23 @@ export async function queryTranslatorNode(
           ecosystemFocused: parsed.search_strategies?.ecosystemFocused || state.query,
         },
       };
+      console.log("[Query Translator] Parsed keywords:", searchParams.keywords);
+      console.log("[Query Translator] Expanded keywords:", searchParams.expanded_keywords);
     } catch (parseError) {
       console.error("Failed to parse Query Translator response:", parseError);
-      // Fallback: Use original query
+      console.error("Raw response:", cleanedResponse);
+      // Fallback: Extract core keywords intelligently
+      const coreKeywords = extractCoreKeywords(state.query, state.language);
       searchParams = {
-        keywords: state.query.toLowerCase().split(/\s+/),
-        expanded_keywords: state.query.toLowerCase().split(/\s+/),
+        keywords: coreKeywords,
+        expanded_keywords: coreKeywords,
         search_strategies: {
-          primary: state.query,
-          toolFocused: state.query,
-          ecosystemFocused: state.query,
+          primary: coreKeywords.slice(0, 3).join(" "),
+          toolFocused: coreKeywords.slice(0, 3).join(" "),
+          ecosystemFocused: coreKeywords.slice(0, 3).join(" "),
         },
       };
+      console.log("[Query Translator] Fallback keywords:", searchParams.keywords);
     }
 
     // Track cost
@@ -82,15 +114,18 @@ export async function queryTranslatorNode(
   } catch (error) {
     console.error("Query Translator error:", error);
 
-    // Fallback: Use original query
+    // Fallback: Extract core keywords intelligently
+    const coreKeywords = extractCoreKeywords(state.query, state.language);
+    console.log("[Query Translator] Error fallback keywords:", coreKeywords);
+
     return {
       searchParams: {
-        keywords: state.query.toLowerCase().split(/\s+/),
-        expanded_keywords: state.query.toLowerCase().split(/\s+/),
+        keywords: coreKeywords,
+        expanded_keywords: coreKeywords,
         search_strategies: {
-          primary: state.query,
-          toolFocused: state.query,
-          ecosystemFocused: state.query,
+          primary: coreKeywords.slice(0, 3).join(" "),
+          toolFocused: coreKeywords.slice(0, 3).join(" "),
+          ecosystemFocused: coreKeywords.slice(0, 3).join(" "),
         },
       },
       stage: "scouting",

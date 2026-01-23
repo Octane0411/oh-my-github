@@ -1,9 +1,22 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useChat } from 'ai/react';
+import { useEffect, useRef, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useChatStore } from '@/lib/stores/chat-store';
+import type { Phase, ScoredRepository, SkillArtifact } from '@/lib/types/chat';
 import { InitialView } from '@/components/chat-ui/initial-view';
+
+// Type for tool event data
+interface ToolEventData {
+  toolName: string;
+  event: {
+    type: 'log' | 'progress' | 'result' | 'error';
+    message: string;
+    data?: unknown;
+    timestamp: number;
+  };
+}
 import { ConversationBlock } from '@/components/chat-ui/conversation-block';
 import { ScoutBlock } from '@/components/chat-ui/scout-block';
 import { ACSScoreCard } from '@/components/chat-ui/acs-score-card';
@@ -15,7 +28,9 @@ import { Send } from 'lucide-react';
 
 export default function SkillFactoryPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const previousPhaseRef = useRef<Phase>('IDLE');
+  const [isPhaseTransitioning, setIsPhaseTransitioning] = useState(false);
 
   // Zustand store
   const currentPhase = useChatStore((state) => state.currentPhase);
@@ -30,91 +45,45 @@ export default function SkillFactoryPage() {
   const setSkillArtifact = useChatStore((state) => state.setSkillArtifact);
   const reset = useChatStore((state) => state.reset);
 
-  // Vercel AI SDK useChat hook
-  const { messages, input, handleInputChange, handleSubmit, isLoading, data, append, error } = useChat({
-    api: '/api/consultant',
-    onResponse: (response) => {
-      console.log('[useChat] Response received:', response.status, response.statusText);
-    },
-    onToolCall: async ({ toolCall }) => {
-      console.log('[useChat] Tool call detected:', toolCall);
+  const [input, setInput] = useState('');
 
-      // Phase transition based on tool name
-      if (toolCall.toolName === 'findRepository') {
-        console.log('[useChat] Switching to DISCOVERY phase');
-        setPhase('DISCOVERY');
-      } else if (toolCall.toolName === 'generateSkill') {
-        console.log('[useChat] Switching to FABRICATION phase');
-        setPhase('FABRICATION');
-      }
-    },
-    onFinish: (message) => {
-      console.log('[useChat] Message finished:', message);
+  // Vercel AI SDK useChat hook (v6)
+  const {
+    messages,
+    sendMessage,
+    status,
+    error
+  } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/consultant'
+    }),
 
-      // Handle tool results
-      if (message.toolInvocations) {
-        message.toolInvocations.forEach((inv) => {
-          console.log('[useChat] Tool invocation:', inv.toolName, inv.state);
-          if (inv.state === 'result') {
-            handleToolResult(inv.toolName, inv.result);
-          }
-        });
-      }
-    },
-    onError: (error) => {
-      console.error('[useChat] Error occurred:', error);
-    },
-  });
+    // Handle transient tool events via onData callback
+    onData: (dataPart) => {
+      console.log('[useChat] Received data part:', dataPart);
 
-  // Handle tool results
-  const handleToolResult = (toolName: string, result: any) => {
-    console.log('Tool result:', toolName, result);
+      if (dataPart.type === 'data-tool-event') {
+        const { toolName, event } = dataPart.data as ToolEventData;
+        console.log('[useChat] Tool event:', toolName, event.type, event.message);
 
-    if (toolName === 'findRepository') {
-      if (result?.repositories && result.repositories.length > 0) {
-        setACSScores(result.repositories);
-        addDiscoveryLog(`✅ Found ${result.repositories.length} suitable repositories`, 'success');
-      } else {
-        addDiscoveryLog(result?.summary || 'No repositories found', 'warning');
-      }
-    } else if (toolName === 'generateSkill') {
-      if (result?.success && result?.skill) {
-        setSkillArtifact(result.skill);
-        setPhase('DELIVERY');
-        addFabricationLog('✅ Skill generation completed!', 'success');
-      } else {
-        // Phase 7 stub response
-        addFabricationLog(result?.message || 'Skill generation pending', 'warning');
-        if (result?.details && Array.isArray(result.details)) {
-          result.details.forEach((detail: string) => {
-            addFabricationLog(`  • ${detail}`, 'info');
-          });
-        }
-      }
-    }
-  };
-
-  // Handle streaming tool events
-  useEffect(() => {
-    if (!data || data.length === 0) return;
-
-    // Process the latest data event
-    const latestEvent = data[data.length - 1];
-
-    if (latestEvent && typeof latestEvent === 'object' && 'type' in latestEvent) {
-      const streamData = latestEvent as any;
-
-      if (streamData.type === 'tool_event') {
-        const { toolName, event } = streamData;
-
-        // Route events to appropriate log based on tool
+        // Phase transition based on tool name
         if (toolName === 'findRepository') {
+          if (currentPhase !== 'DISCOVERY') {
+            console.log('[useChat] Switching to DISCOVERY phase');
+            setPhase('DISCOVERY');
+          }
+          // Add discovery logs
           if (event.type === 'log' || event.type === 'progress') {
             addDiscoveryLog(event.message, 'info');
           } else if (event.type === 'error') {
             addDiscoveryLog(event.message, 'error');
           }
         } else if (toolName === 'generateSkill') {
+          if (currentPhase !== 'FABRICATION') {
+            console.log('[useChat] Switching to FABRICATION phase');
+            setPhase('FABRICATION');
+          }
+          // Add fabrication logs
           if (event.type === 'log' || event.type === 'progress') {
             addFabricationLog(event.message, 'info');
           } else if (event.type === 'error') {
@@ -122,25 +91,114 @@ export default function SkillFactoryPage() {
           }
         }
       }
+    },
+
+    onFinish: ({ message }) => {
+      console.log('[useChat] Message finished:', message);
+
+      // Handle tool results from message parts
+      message.parts.forEach((part) => {
+        // Check for tool parts
+        if (part.type.startsWith('tool-')) {
+          const toolName = part.type.replace('tool-', '');
+
+          // Type guard for tool parts with state
+          if ('state' in part && part.state === 'output-available' && 'output' in part) {
+            // Handle tool output
+            handleToolResult(toolName, part.output);
+          }
+        }
+      });
+    },
+
+    onError: (error) => {
+      console.error('[useChat] Error occurred:', error);
+    },
+  });
+
+  // Handle tool results
+  const handleToolResult = (toolName: string, result: unknown) => {
+    console.log('Tool result:', toolName, result);
+
+    if (toolName === 'findRepository') {
+      // Type guard for findRepository result
+      const isValidResult = (r: unknown): r is { repositories: ScoredRepository[]; summary?: string } => {
+        return typeof r === 'object' && r !== null && 'repositories' in r && Array.isArray(r.repositories);
+      };
+
+      if (isValidResult(result) && result.repositories.length > 0) {
+        setACSScores(result.repositories);
+        addDiscoveryLog(`✅ Found ${result.repositories.length} suitable repositories`, 'success');
+      } else if (isValidResult(result)) {
+        addDiscoveryLog(result.summary || 'No repositories found', 'warning');
+      }
+    } else if (toolName === 'generateSkill') {
+      // Type guard for generateSkill result
+      const isValidResult = (r: unknown): r is { success: boolean; skill?: SkillArtifact; message?: string; details?: string[] } => {
+        return typeof r === 'object' && r !== null && 'success' in r;
+      };
+
+      if (isValidResult(result)) {
+        if (result.success && result.skill) {
+          setSkillArtifact(result.skill);
+          setPhase('DELIVERY');
+          addFabricationLog('✅ Skill generation completed!', 'success');
+        } else {
+          // Phase 7 stub response
+          addFabricationLog(result.message || 'Skill generation pending', 'warning');
+          if (result.details && Array.isArray(result.details)) {
+            result.details.forEach((detail: string) => {
+              addFabricationLog(`  • ${detail}`, 'info');
+            });
+          }
+        }
+      }
     }
-  }, [data, addDiscoveryLog, addFabricationLog]);
+  };
+
+  // Note: Tool events are now handled via onData callback in useChat
+  // No need for separate useEffect to process message parts
+
+  // Detect phase transitions
+  useEffect(() => {
+    if (previousPhaseRef.current === 'IDLE' && currentPhase !== 'IDLE') {
+      setIsPhaseTransitioning(true);
+      // Reset transition flag after animation completes
+      setTimeout(() => setIsPhaseTransitioning(false), 200);
+    }
+    previousPhaseRef.current = currentPhase;
+  }, [currentPhase]);
 
   // Auto-scroll to bottom when phase changes or new messages arrive
   useEffect(() => {
-    // Don't scroll on IDLE phase or when there's no content
-    if (currentPhase === 'IDLE' || !containerRef.current) {
+    // Don't scroll during phase transition (prevents scroll on IDLE -> CONSULTATION)
+    if (isPhaseTransitioning || currentPhase === 'IDLE' || !containerRef.current) {
       return;
     }
 
     // Only scroll if there are messages or logs
     const hasContent = messages.length > 0 || discoveryLogs.length > 0 || fabricationLogs.length > 0;
     if (hasContent) {
-      containerRef.current.scrollTo({
-        top: containerRef.current.scrollHeight,
-        behavior: 'smooth',
+      // Double requestAnimationFrame to ensure DOM is fully rendered
+      // First RAF: layout calculation, Second RAF: paint complete
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (containerRef.current) {
+            const container = containerRef.current;
+            const isOverflowing = container.scrollHeight > container.clientHeight;
+            
+            // Only scroll if content overflows the container
+            if (isOverflowing) {
+              container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth',
+              });
+            }
+          }
+        });
       });
     }
-  }, [messages, currentPhase, discoveryLogs, fabricationLogs]);
+  }, [messages, discoveryLogs, fabricationLogs, isPhaseTransitioning, currentPhase]);
 
   // Debug: Monitor messages changes
   useEffect(() => {
@@ -155,10 +213,10 @@ export default function SkillFactoryPage() {
     }
   }, [error]);
 
-  // Debug: Monitor loading state
+  // Debug: Monitor status
   useEffect(() => {
-    console.log('[useEffect] Loading state:', isLoading);
-  }, [isLoading]);
+    console.log('[useEffect] Status:', status);
+  }, [status]);
 
   // When conversation starts, transition to CONSULTATION phase
   useEffect(() => {
@@ -170,12 +228,9 @@ export default function SkillFactoryPage() {
 
   const handleInitialSubmit = (message: string) => {
     console.log('[handleInitialSubmit] User message:', message);
-    // Use append to add user message
-    append({
-      role: 'user',
-      content: message,
-    });
-    console.log('[handleInitialSubmit] Message appended, waiting for response...');
+    // Use sendMessage (v6 API)
+    sendMessage({ text: message });
+    console.log('[handleInitialSubmit] Message sent, waiting for response...');
     // Phase will be set automatically by useEffect when messages.length > 0
   };
 
@@ -185,10 +240,7 @@ export default function SkillFactoryPage() {
 
   const handleConvertToSkill = async (repoUrl: string) => {
     // Call the generateSkill tool through the chat API
-    await append({
-      role: 'user',
-      content: `Please convert this repository to a skill: ${repoUrl}`,
-    });
+    sendMessage({ text: `Please convert this repository to a skill: ${repoUrl}` });
   };
 
   const handleDownloadSkill = () => {
@@ -211,187 +263,236 @@ export default function SkillFactoryPage() {
   };
 
   // Convert AI SDK messages to our format
-  const conversationMessages = messages.map((msg) => ({
-    role: msg.role as 'user' | 'assistant',
-    content: msg.content,
-    suggestions: msg.role === 'assistant' ? [] : undefined,
-  }));
+  const conversationMessages = messages.map((msg) => {
+    // Extract text content from parts array
+    const textContent = msg.parts
+      .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+      .map(part => part.text)
+      .join('\n');
+
+    return {
+      role: msg.role as 'user' | 'assistant',
+      content: textContent,
+      suggestions: msg.role === 'assistant' ? [] : undefined,
+    };
+  });
 
   return (
-    <div className="flex flex-col bg-background" style={{ height: 'calc(100vh - 64px)' }}>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
       {/* Debug Panel */}
       <div className="fixed top-16 right-4 bg-card border border-border p-4 rounded-lg shadow-lg z-50 max-w-sm text-xs">
         <div className="font-bold mb-2">调试信息</div>
         <div className="space-y-1">
           <div>Phase: <span className="font-mono text-primary">{currentPhase}</span></div>
           <div>Messages: <span className="font-mono">{messages.length}</span></div>
-          <div>Loading: <span className="font-mono">{isLoading ? '✅' : '❌'}</span></div>
+          <div>Loading: <span className="font-mono">{status === 'streaming' || status === 'submitted' ? '✅' : '❌'}</span></div>
           <div>Error: <span className="font-mono text-destructive">{error ? error.message : 'None'}</span></div>
           <div>Discovery Logs: <span className="font-mono">{discoveryLogs.length}</span></div>
           <div>Fabrication Logs: <span className="font-mono">{fabricationLogs.length}</span></div>
           <div>ACS Scores: <span className="font-mono">{acsScores.length}</span></div>
         </div>
       </div>
-
       <div ref={containerRef} className="flex-1 overflow-y-auto">
-        {/* IDLE Phase: Show initial view */}
+        {/* IDLE Phase: Show initial view (no content-area background) */}
         {currentPhase === 'IDLE' && <InitialView onSubmit={handleInitialSubmit} />}
 
-        {/* CONSULTATION Phase: Show conversation */}
-        {currentPhase === 'CONSULTATION' && (
-          <div className="space-y-6 py-6 pb-32">
-            <ConversationBlock
-              messages={conversationMessages}
-              onSuggestionClick={handleSuggestionClick}
-            />
-          </div>
-        )}
-
-        {/* DISCOVERY Phase: Show scout block and ACS scores */}
-        {currentPhase === 'DISCOVERY' && (
-          <div className="space-y-6 py-6 pb-32">
-            {conversationMessages.length > 0 && (
-              <ConversationBlock
-                messages={conversationMessages}
-                onSuggestionClick={handleSuggestionClick}
-              />
-            )}
-            <ScoutBlock logs={discoveryLogs} />
-
-            {acsScores.length > 0 && (
-              <div className="max-w-4xl mx-auto px-4 space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">
-                  Found {acsScores.length} repositories
-                </h3>
-                <div className="grid gap-4">
-                  {acsScores.map((repo, idx) => (
-                    <ACSScoreCard
-                      key={idx}
-                      repository={repo}
-                      onConvert={handleConvertToSkill}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* FABRICATION Phase: Show conversation history + fabricator block */}
-        {currentPhase === 'FABRICATION' && (
-          <div className="space-y-6 py-6 pb-32">
-            {conversationMessages.length > 0 && (
-              <ConversationBlock
-                messages={conversationMessages}
-                onSuggestionClick={handleSuggestionClick}
-              />
-            )}
-
-            {/* Show previous discovery results if available */}
-            {discoveryLogs.length > 0 && (
-              <ScoutBlock logs={discoveryLogs} />
-            )}
-
-            {acsScores.length > 0 && (
-              <div className="max-w-4xl mx-auto px-4 space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">
-                  Found {acsScores.length} repositories
-                </h3>
-                <div className="grid gap-4">
-                  {acsScores.map((repo, idx) => (
-                    <ACSScoreCard
-                      key={idx}
-                      repository={repo}
-                      onConvert={handleConvertToSkill}
-                    />
-                  ))}
-                </div>
+        {/* Content area with frosted glass background for conversation phases */}
+        {currentPhase !== 'IDLE' && (
+          <div className="content-area">
+            {/* CONSULTATION Phase: Show conversation */}
+            {currentPhase === 'CONSULTATION' && (
+              <div className="space-y-3 pt-4 pb-40">
+                <ConversationBlock
+                  messages={conversationMessages}
+                  onSuggestionClick={handleSuggestionClick}
+                />
               </div>
             )}
 
-            {/* Fabrication progress */}
-            <FabricatorBlock logs={fabricationLogs} />
-          </div>
-        )}
+            {/* DISCOVERY Phase: Show scout block and ACS scores */}
+            {currentPhase === 'DISCOVERY' && (
+              <div className="space-y-3 pt-4 pb-40">
+                {conversationMessages.length > 0 && (
+                  <ConversationBlock
+                    messages={conversationMessages}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
+                )}
+                <ScoutBlock logs={discoveryLogs} />
 
-        {/* DELIVERY Phase: Show complete journey + skill delivery */}
-        {currentPhase === 'DELIVERY' && skillArtifact && (
-          <div className="space-y-6 py-6 pb-32">
-            {conversationMessages.length > 0 && (
-              <ConversationBlock
-                messages={conversationMessages}
-                onSuggestionClick={handleSuggestionClick}
-              />
-            )}
-
-            {/* Show previous discovery results if available */}
-            {discoveryLogs.length > 0 && (
-              <ScoutBlock logs={discoveryLogs} />
-            )}
-
-            {acsScores.length > 0 && (
-              <div className="max-w-4xl mx-auto px-4 space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">
-                  Found {acsScores.length} repositories
-                </h3>
-                <div className="grid gap-4">
-                  {acsScores.map((repo, idx) => (
-                    <ACSScoreCard
-                      key={idx}
-                      repository={repo}
-                      onConvert={handleConvertToSkill}
-                    />
-                  ))}
-                </div>
+                {acsScores.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="max-w-4xl mx-auto px-4">
+                      <h3 className="text-sm font-semibold text-muted-foreground">
+                        Found {acsScores.length} repositories
+                      </h3>
+                    </div>
+                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
+                      <div className="overflow-x-auto repo-scroll-container">
+                        <div className="flex gap-4 px-4 py-1">
+                          {acsScores.map((repo, idx) => (
+                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
+                              <ACSScoreCard
+                                repository={repo}
+                                onConvert={handleConvertToSkill}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Show fabrication logs */}
-            {fabricationLogs.length > 0 && (
-              <FabricatorBlock logs={fabricationLogs} />
+            {/* FABRICATION Phase: Show conversation history + fabricator block */}
+            {currentPhase === 'FABRICATION' && (
+              <div className="space-y-3 pt-4 pb-40">
+                {conversationMessages.length > 0 && (
+                  <ConversationBlock
+                    messages={conversationMessages}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
+                )}
+
+                {/* Show previous discovery results if available */}
+                {discoveryLogs.length > 0 && (
+                  <ScoutBlock logs={discoveryLogs} />
+                )}
+
+                {acsScores.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="max-w-4xl mx-auto px-4">
+                      <h3 className="text-sm font-semibold text-muted-foreground">
+                        Found {acsScores.length} repositories
+                      </h3>
+                    </div>
+                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
+                      <div className="overflow-x-auto repo-scroll-container">
+                        <div className="flex gap-4 px-4 py-1">
+                          {acsScores.map((repo, idx) => (
+                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
+                              <ACSScoreCard
+                                repository={repo}
+                                onConvert={handleConvertToSkill}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fabrication progress */}
+                <FabricatorBlock logs={fabricationLogs} />
+              </div>
             )}
 
-            {/* Final skill delivery */}
-            <SkillDeliveryCard
-              artifact={skillArtifact}
-              onDownload={handleDownloadSkill}
-              onReset={handleReset}
-            />
+            {/* DELIVERY Phase: Show complete journey + skill delivery */}
+            {currentPhase === 'DELIVERY' && skillArtifact && (
+              <div className="space-y-3 pt-4 pb-40">
+                {conversationMessages.length > 0 && (
+                  <ConversationBlock
+                    messages={conversationMessages}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
+                )}
+
+                {/* Show previous discovery results if available */}
+                {discoveryLogs.length > 0 && (
+                  <ScoutBlock logs={discoveryLogs} />
+                )}
+
+                {acsScores.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="max-w-4xl mx-auto px-4">
+                      <h3 className="text-sm font-semibold text-muted-foreground">
+                        Found {acsScores.length} repositories
+                      </h3>
+                    </div>
+                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
+                      <div className="overflow-x-auto repo-scroll-container">
+                        <div className="flex gap-4 px-4 py-1">
+                          {acsScores.map((repo, idx) => (
+                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
+                              <ACSScoreCard
+                                repository={repo}
+                                onConvert={handleConvertToSkill}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show fabrication logs */}
+                {fabricationLogs.length > 0 && (
+                  <FabricatorBlock logs={fabricationLogs} />
+                )}
+
+                {/* Final skill delivery */}
+                <SkillDeliveryCard
+                  artifact={skillArtifact}
+                  onDownload={handleDownloadSkill}
+                  onReset={handleReset}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
-
       {/* Input Area - Fixed bottom with gradient backdrop (prototype-based) */}
       {(currentPhase === 'CONSULTATION' || currentPhase === 'DISCOVERY') && (
         <div className="input-container">
-          <form onSubmit={handleSubmit} className="input-wrapper" autoComplete="off">
-            <textarea
-              ref={inputRef as any}
-              value={input}
-              onChange={handleInputChange}
-              placeholder="Ask about tools, frameworks, or APIs..."
-              disabled={isLoading}
-              rows={1}
-              className="input-field"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck="false"
-              data-form-type="other"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e as any);
-                }
-              }}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="send-button"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (input.trim()) {
+                sendMessage({ text: input });
+                setInput('');
+              }
+            }} 
+            className="input-wrapper" 
+            autoComplete="off"
+          >
+            <div className="relative flex-1">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Ask about tools, frameworks, or APIs..."
+                disabled={status === 'streaming'}
+                rows={1}
+                className="input-field pr-14"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                data-form-type="other"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (input.trim()) {
+                      sendMessage({ text: input });
+                      setInput('');
+                    }
+                  }
+                }}
+              />
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
+                <button
+                  type="submit"
+                  disabled={status === 'streaming' || !input.trim()}
+                  className="send-button"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </form>
         </div>
       )}

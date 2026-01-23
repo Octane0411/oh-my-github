@@ -112,7 +112,7 @@ export interface ScoredRepository extends Repository {
   }>;
 
   /** LLM reasoning for scores (optional, for debugging) */
-  reasoning?: string;
+  reasoningText?: string;
 }
 
 /**

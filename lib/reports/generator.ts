@@ -3,6 +3,7 @@ import type {
   PartialAnalysisResult,
 } from "../llm/parser";
 import type { TokenUsage } from "../llm/client";
+import type { LanguageModelUsage } from "ai";
 
 /**
  * Report format options
@@ -22,7 +23,7 @@ export interface ReportMetadata {
   analysisDate: string;
   llmProvider: string;
   llmModel: string;
-  tokenUsage: TokenUsage;
+  tokenUsage: LanguageModelUsage;
   dataFreshness: string;
   isPartial?: boolean;
   availableSections?: string[];
@@ -129,7 +130,7 @@ function generateReportHeader(metadata: ReportMetadata): string {
 
 **Analysis Date**: ${metadata.analysisDate}
 **LLM Provider**: ${metadata.llmProvider} (${metadata.llmModel})
-**Token Usage**: ${metadata.tokenUsage.totalTokens} tokens (~$${metadata.tokenUsage.estimatedCost.toFixed(4)})
+**Token Usage**: ${metadata.tokenUsage.totalTokens ?? 0} tokens
 **Data Freshness**: ${metadata.dataFreshness}`;
 }
 

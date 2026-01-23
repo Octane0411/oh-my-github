@@ -75,7 +75,7 @@ async function testDirectWorkflow() {
           console.log(`       ACS Score: ${scored.acsScore.total}/100 (${scored.acsScore.recommendation})`);
           console.log(`       Strategy: ${scored.acsScore.skill_strategy}`);
           console.log(`       Stars: ${scored.repo.stars}`);
-          console.log(`       Reasoning: ${scored.reasoning.slice(0, 100)}...`);
+          console.log(`       Reasoning: ${scored.reasoningText.slice(0, 100)}...`);
         });
       }
     } catch (error) {

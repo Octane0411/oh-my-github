@@ -85,7 +85,7 @@ describe('ACS Evaluator', () => {
     expect(result.acsScore.recommendation).toBe('HIGHLY_RECOMMENDED');
     expect(result.acsScore.skill_strategy).toBe('PYTHON_SCRIPT');
     expect(result.acsScore.breakdown.interface_clarity).toBe(25);
-    expect(result.reasoning).toContain('CLI');
+    expect(result.reasoningText).toContain('CLI');
   });
 
   it('should handle LLM timeout with default score', async () => {
@@ -99,7 +99,7 @@ describe('ACS Evaluator', () => {
     // Should return default score
     expect(result.acsScore.total).toBe(50);
     expect(result.acsScore.recommendation).toBe('POSSIBLE');
-    expect(result.reasoning).toContain('failed');
+    expect(result.reasoningText).toContain('failed');
   });
 
   it('should handle invalid JSON response', async () => {
@@ -113,7 +113,7 @@ describe('ACS Evaluator', () => {
     // Should return default score
     expect(result.acsScore.total).toBe(50);
     expect(result.acsScore.recommendation).toBe('POSSIBLE');
-    expect(result.reasoning).toContain('failed');
+    expect(result.reasoningText).toContain('failed');
   });
 
   it('should normalize out-of-bounds scores', async () => {

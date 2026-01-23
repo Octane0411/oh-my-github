@@ -270,16 +270,16 @@ async function runTests() {
       console.log(`  Ease of Use:   ${result.easeOfUse}/10`);
       console.log(`  Relevance:     ${result.relevance}/10`);
 
-      if (result.reasoning) {
+      if (result.reasoningText) {
         console.log(`\\n💭 Reasoning:`);
-        if (result.reasoning.documentation) {
-          console.log(`  Doc: ${result.reasoning.documentation}`);
+        if (result.reasoningText.documentation) {
+          console.log(`  Doc: ${result.reasoningText.documentation}`);
         }
-        if (result.reasoning.easeOfUse) {
-          console.log(`  UX:  ${result.reasoning.easeOfUse}`);
+        if (result.reasoningText.easeOfUse) {
+          console.log(`  UX:  ${result.reasoningText.easeOfUse}`);
         }
-        if (result.reasoning.relevance) {
-          console.log(`  Rel: ${result.reasoning.relevance}`);
+        if (result.reasoningText.relevance) {
+          console.log(`  Rel: ${result.reasoningText.relevance}`);
         }
       }
 

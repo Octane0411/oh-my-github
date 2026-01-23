@@ -13,6 +13,8 @@ export type H2EventType =
   | 'translator:error'
   | 'scout:start'
   | 'scout:searching'
+  | 'scout:strategy:start'
+  | 'scout:strategy:complete'
   | 'scout:complete'
   | 'scout:error'
   | 'screener:start'
@@ -23,7 +25,7 @@ export type H2EventType =
 export interface H2Event {
   type: H2EventType;
   timestamp: number;
-  data?: any;
+  data?: unknown;
   message?: string;
 }
 
@@ -52,7 +54,7 @@ export class H2EventEmitter {
   /**
    * Emit an event to all subscribers
    */
-  async emit(type: H2EventType, data?: any, message?: string): Promise<void> {
+  async emit(type: H2EventType, data?: unknown, message?: string): Promise<void> {
     const event: H2Event = {
       type,
       timestamp: Date.now(),

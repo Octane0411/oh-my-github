@@ -31,7 +31,7 @@ export interface ACSScore {
 export interface ScoredRepository {
   repo: Repository;
   acsScore: ACSScore;
-  reasoning: string;
+  reasoningText: string;
 }
 
 export interface SearchParams {

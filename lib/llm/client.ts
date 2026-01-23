@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import type { LanguageModelUsage } from "ai";
 
 /**
  * Token usage statistics for an LLM request
@@ -28,7 +29,7 @@ export interface LLMConfig {
  */
 export interface LLMAnalysisResult {
   content: string;
-  usage: TokenUsage;
+  usage: LanguageModelUsage;
   model: string;
   provider: string;
 }
@@ -39,11 +40,19 @@ export interface LLMAnalysisResult {
 export class LLMClient {
   private client: OpenAI;
   private config: Required<LLMConfig>;
-  private cumulativeUsage: TokenUsage = {
+  private cumulativeUsage: LanguageModelUsage = {
     inputTokens: 0,
     outputTokens: 0,
     totalTokens: 0,
-    estimatedCost: 0,
+    inputTokenDetails: {
+      noCacheTokens: undefined,
+      cacheReadTokens: undefined,
+      cacheWriteTokens: undefined,
+    },
+    outputTokenDetails: {
+      textTokens: undefined,
+      reasoningTokens: undefined,
+    },
   };
 
   /**
@@ -138,25 +147,36 @@ export class LLMClient {
         throw new Error("No usage data returned from LLM provider");
       }
 
-      const tokenUsage: TokenUsage = {
+      const tokenUsage: LanguageModelUsage = {
         inputTokens: usage.prompt_tokens,
         outputTokens: usage.completion_tokens,
         totalTokens: usage.total_tokens,
-        estimatedCost: this.calculateCost(
-          usage.prompt_tokens,
-          usage.completion_tokens
-        ),
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: undefined,
+          cacheWriteTokens: undefined,
+        },
+        outputTokenDetails: {
+          textTokens: undefined,
+          reasoningTokens: undefined,
+        },
       };
 
       // Update cumulative usage
-      this.cumulativeUsage.inputTokens += tokenUsage.inputTokens;
-      this.cumulativeUsage.outputTokens += tokenUsage.outputTokens;
-      this.cumulativeUsage.totalTokens += tokenUsage.totalTokens;
-      this.cumulativeUsage.estimatedCost += tokenUsage.estimatedCost;
+      if (this.cumulativeUsage.inputTokens !== undefined && tokenUsage.inputTokens !== undefined) {
+        this.cumulativeUsage.inputTokens += tokenUsage.inputTokens;
+      }
+      if (this.cumulativeUsage.outputTokens !== undefined && tokenUsage.outputTokens !== undefined) {
+        this.cumulativeUsage.outputTokens += tokenUsage.outputTokens;
+      }
+      if (this.cumulativeUsage.totalTokens !== undefined && tokenUsage.totalTokens !== undefined) {
+        this.cumulativeUsage.totalTokens += tokenUsage.totalTokens;
+      }
 
+      const cost = this.calculateCost(usage.prompt_tokens, usage.completion_tokens);
       const duration = Date.now() - startTime;
       console.log(
-        `LLM request completed in ${duration}ms - Tokens: ${tokenUsage.totalTokens}, Cost: $${tokenUsage.estimatedCost.toFixed(4)}`
+        `LLM request completed in ${duration}ms - Tokens: ${tokenUsage.totalTokens}, Cost: $${cost.toFixed(4)}`
       );
 
       return {
@@ -268,7 +288,7 @@ export class LLMClient {
    * Gets the cumulative token usage across all requests
    * @returns Cumulative token usage statistics
    */
-  getCumulativeUsage(): Readonly<TokenUsage> {
+  getCumulativeUsage(): Readonly<LanguageModelUsage> {
     return { ...this.cumulativeUsage };
   }
 
@@ -280,7 +300,15 @@ export class LLMClient {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      estimatedCost: 0,
+      inputTokenDetails: {
+        noCacheTokens: undefined,
+        cacheReadTokens: undefined,
+        cacheWriteTokens: undefined,
+      },
+      outputTokenDetails: {
+        textTokens: undefined,
+        reasoningTokens: undefined,
+      },
     };
   }
 

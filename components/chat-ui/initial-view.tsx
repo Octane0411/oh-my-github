@@ -4,11 +4,10 @@ interface InitialViewProps {
   onSubmit: (message: string) => void;
 }
 
-const trendingSkills = [
-  { icon: '📄', name: 'PDF Tools', query: 'Find me a repo for PDF manipulation' },
-  { icon: '🎥', name: 'Video Downloader', query: 'I need a YouTube video downloader' },
-  { icon: '📊', name: 'Data Visualization', query: 'Find me chart and graph libraries' },
-  { icon: '🔐', name: 'Authentication', query: 'I need JWT authentication tools' },
+const quickExamples = [
+  'I need a tool to extract data from PDFs',
+  'Find me a YouTube video downloader',
+  'I need JWT authentication tools',
 ];
 
 export function InitialView({ onSubmit }: InitialViewProps) {
@@ -17,8 +16,8 @@ export function InitialView({ onSubmit }: InitialViewProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-theme(spacing.16))] px-4 py-12">
-      <div className="w-full max-w-4xl space-y-12">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-theme(spacing.16))] px-4 py-8">
+      <div className="w-full max-w-4xl space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center space-x-2 px-4 py-2 bg-muted rounded-full text-sm text-foreground font-medium">
@@ -35,7 +34,7 @@ export function InitialView({ onSubmit }: InitialViewProps) {
           </h1>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Describe what you need, and I'll help you discover the perfect repository and transform it into a ready-to-use Claude Agent skill.
+            Describe what you need, and I&apos;ll help you discover the perfect repository and transform it into a ready-to-use Agent skill.
           </p>
         </div>
 
@@ -81,59 +80,43 @@ export function InitialView({ onSubmit }: InitialViewProps) {
           </div>
         </div>
 
-        {/* Trending Skills */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
-            <span className="w-8 h-px bg-github-border"></span>
-            <span className="font-medium">Trending Skills</span>
-            <span className="w-8 h-px bg-github-border"></span>
+        {/* Quick Examples */}
+        <div className="space-y-3">
+          <div className="text-center text-sm text-muted-foreground">
+            Try these examples
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {trendingSkills.map((skill) => (
+          <div className="flex flex-wrap justify-center gap-2">
+            {quickExamples.map((example, idx) => (
               <button
-                key={skill.name}
-                onClick={() => handleQuickStart(skill.query)}
-                className="group flex flex-col items-center p-4 bg-white border border-github-border rounded-xl hover:border-blue-500 hover:shadow-md transition-all"
+                key={idx}
+                onClick={() => handleQuickStart(example)}
+                className="px-4 py-2 text-sm border border-border rounded-full hover:border-foreground hover:bg-muted transition-colors"
               >
-                <span className="text-3xl mb-2">{skill.icon}</span>
-                <span className="text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
-                  {skill.name}
-                </span>
+                {example}
               </button>
             ))}
           </div>
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-6 pt-8">
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
-              <Search className="w-6 h-6 text-foreground" />
+        <div className="grid md:grid-cols-2 gap-8 pt-4 max-w-2xl mx-auto">
+          <div className="text-center space-y-1.5">
+            <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center mx-auto">
+              <Search className="w-5 h-5 text-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground">Smart Discovery</h3>
-            <p className="text-sm text-muted-foreground">
-              AI-powered search finds the best repositories for your needs
+            <h3 className="font-semibold text-foreground text-sm">Smart Discovery</h3>
+            <p className="text-xs text-muted-foreground">
+              AI-powered search finds the best repositories
             </p>
           </div>
 
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
-              <Zap className="w-6 h-6 text-foreground" />
+          <div className="text-center space-y-1.5">
+            <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center mx-auto">
+              <Sparkles className="w-5 h-5 text-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground">Instant Conversion</h3>
-            <p className="text-sm text-muted-foreground">
-              Automatically generates skills with documentation and examples
-            </p>
-          </div>
-
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
-              <Sparkles className="w-6 h-6 text-foreground" />
-            </div>
-            <h3 className="font-semibold text-foreground">Quality Scored</h3>
-            <p className="text-sm text-muted-foreground">
-              ACS scoring ensures compatibility with Claude agents
+            <h3 className="font-semibold text-foreground text-sm">Quality Scored</h3>
+            <p className="text-xs text-muted-foreground">
+              ACS scoring ensures agent compatibility
             </p>
           </div>
         </div>

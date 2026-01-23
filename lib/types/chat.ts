@@ -23,8 +23,9 @@ export interface ScoredRepository {
   description?: string;
   url: string;
   stars: number;
+  language?: string; // Primary programming language
   acsScore: ACSScore;
-  reasoning?: string; // Why this repo was selected
+  reasoningText?: string; // Why this repo was selected
 }
 
 /**

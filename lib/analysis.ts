@@ -159,7 +159,12 @@ export async function analyzeRepository(
   return {
     report,
     validation,
-    tokenUsage: llmResult.usage,
+    tokenUsage: {
+      inputTokens: llmResult.usage.inputTokens ?? 0,
+      outputTokens: llmResult.usage.outputTokens ?? 0,
+      totalTokens: llmResult.usage.totalTokens ?? 0,
+      estimatedCost: 0, // Cost calculation not implemented for this provider
+    },
   };
 }
 
@@ -197,7 +202,7 @@ export async function compareRepositories(
   // Log cumulative usage
   const cumulativeUsage = client.getCumulativeUsage();
   console.log(
-    `\nComparative analysis complete. Total tokens: ${cumulativeUsage.totalTokens}, Total cost: $${cumulativeUsage.estimatedCost.toFixed(4)}`
+    `\nComparative analysis complete. Total tokens: ${cumulativeUsage.totalTokens ?? 0}`
   );
 
   return results;

@@ -11,6 +11,71 @@ body {
   padding: 0;
 }
 
+/* Background texture system */
+body {
+  background:
+    /* 点状网格 - 精致的纹理 */
+    radial-gradient(
+      circle at center,
+      var(--bg-dot-grid) 1px,
+      transparent 1px
+    ),
+    /* 大网格 - 增加结构感 */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 79px,
+      var(--bg-large-grid) 79px,
+      var(--bg-large-grid) 80px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 79px,
+      var(--bg-large-grid) 79px,
+      var(--bg-large-grid) 80px
+    ),
+    /* 顶部品牌色光晕 */
+    radial-gradient(
+      ellipse 1200px 500px at 50% 0px,
+      var(--bg-brand-halo),
+      transparent 70%
+    ),
+    /* 底部柔和光晕 */
+    radial-gradient(
+      ellipse 800px 300px at 50% 100%,
+      var(--bg-soft-glow),
+      transparent 60%
+    ),
+    /* 基础渐变背景 */
+    linear-gradient(
+      to bottom,
+      var(--bg-gradient-start) 0%,
+      var(--bg-gradient-30) 30%,
+      var(--bg-gradient-50) 50%,
+      var(--bg-gradient-70) 70%,
+      var(--bg-gradient-end) 100%
+    );
+  background-size:
+    24px 24px,    /* 点状网格 */
+    80px 80px,    /* 垂直大网格 */
+    80px 80px,    /* 水平大网格 */
+    100% 100%,    /* 顶部光晕 */
+    100% 100%,    /* 底部光晕 */
+    100% 100%;    /* 基础渐变 */
+  background-attachment: fixed;
+}
+
+/* Content area with frosted glass effect */
+.content-area {
+  max-width: 900px;
+  margin: 0 auto;
+  background: hsl(var(--background) / 0.6);
+  backdrop-filter: blur(10px);
+  min-height: calc(100vh - 64px); /* Full height minus navbar */
+  box-shadow: 0 0 0 1px hsl(var(--border) / 0.3);
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -179,7 +244,7 @@ body {
    ============================================ */
 
 .message-item {
-  padding: 1.5rem 0;
+  padding: 0.75rem 0;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -199,7 +264,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .message-avatar {
@@ -214,8 +279,9 @@ body {
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, hsl(240 74% 73%) 0%, hsl(285 40% 51%) 100%);
-  color: hsl(var(--primary-foreground));
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
 }
 
 .agent-avatar {
@@ -238,11 +304,10 @@ body {
 }
 
 .message-content p {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .message-content strong {
-  color: hsl(var(--primary));
   font-weight: 600;
 }
 
@@ -481,10 +546,11 @@ body {
 }
 
 .acs-score-label {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   color: hsl(var(--muted-foreground));
   text-transform: uppercase;
   font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 /* ============================================
@@ -512,13 +578,12 @@ body {
   max-width: 900px;
   margin: 0 auto;
   display: flex;
-  gap: 0.75rem;
-  align-items: flex-end;
+  align-items: center;
   pointer-events: auto;
 }
 
 .input-field {
-  flex: 1;
+  width: 100%;
   border: 1.5px solid hsl(var(--border));
   border-radius: 12px;
   padding: 0.875rem 1.125rem;
@@ -530,6 +595,11 @@ body {
   color: hsl(var(--foreground));
   box-shadow: 0 2px 8px hsl(var(--foreground) / 0.08), 0 1px 2px hsl(var(--foreground) / 0.06);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: hidden;
+}
+
+.input-field.pr-14 {
+  padding-right: 3.5rem;
 }
 
 .input-field:focus {
@@ -543,25 +613,26 @@ body {
   background: hsl(var(--foreground));
   color: hsl(var(--background));
   border: none;
-  border-radius: 12px;
-  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 8px hsl(var(--foreground) / 0.12), 0 1px 2px hsl(var(--foreground) / 0.08);
+  justify-content: center;
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.1);
 }
 
 .send-button:hover:not(:disabled) {
   background: hsl(var(--foreground) / 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.16), 0 2px 4px hsl(var(--foreground) / 0.1);
+  box-shadow: 0 2px 6px hsl(var(--foreground) / 0.15);
 }
 
 .send-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 .send-button:disabled {
@@ -570,29 +641,82 @@ body {
 }
 
 /* ============================================
-   TERMINAL LOGS (Legacy support)
+   DISCOVERY LOG ANIMATIONS (Claude-style)
    ============================================ */
 
-.terminal-logs {
-  scrollbar-width: thin;
-  scrollbar-color: #4b5563 #1f2937;
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
-.terminal-logs::-webkit-scrollbar {
-  width: 6px;
+.discovery-log-progress {
+  animation: subtle-pulse 2s ease-in-out infinite;
 }
 
-.terminal-logs::-webkit-scrollbar-track {
-  background: #1f2937;
+/* Staggered bounce animation for loading dots */
+@keyframes bounce-dot {
+  0%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
 }
 
-.terminal-logs::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 3px;
+/* ============================================
+   HORIZONTAL SCROLL FOR REPO CARDS
+   ============================================ */
+
+.repo-scroll-container {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  position: relative;
+  scroll-behavior: smooth;
 }
 
-.terminal-logs::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+.repo-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Gradient fade-out indicators */
+.repo-scroll-wrapper {
+  position: relative;
+}
+
+.repo-scroll-wrapper::before,
+.repo-scroll-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.repo-scroll-wrapper::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    hsl(var(--background) / 0.8) 0%,
+    hsl(var(--background) / 0.6) 30%,
+    transparent 100%
+  );
+}
+
+.repo-scroll-wrapper::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    hsl(var(--background) / 0.8) 0%,
+    hsl(var(--background) / 0.6) 30%,
+    transparent 100%
+  );
 }
 
 @layer utilities {

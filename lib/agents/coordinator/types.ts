@@ -24,7 +24,7 @@ export interface IntentClassification {
   confidence: number;
 
   /** Brief reasoning for the classification */
-  reasoning: string;
+  reasoningText: string;
 }
 
 /**

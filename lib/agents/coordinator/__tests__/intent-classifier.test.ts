@@ -32,7 +32,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'search',
           confidence: 0.95,
-          reasoning: 'User wants to find repositories',
+          reasoningText: 'User wants to find repositories',
         })
       );
 
@@ -40,7 +40,7 @@ describe('Intent Classifier', () => {
 
       expect(result.intent).toBe('search');
       expect(result.confidence).toBe(0.95);
-      expect(result.reasoning).toBeTruthy();
+      expect(result.reasoningText).toBeTruthy();
     });
 
     it('should classify analyze intent', async () => {
@@ -48,7 +48,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'analyze',
           confidence: 0.88,
-          reasoning: 'User wants detailed analysis',
+          reasoningText: 'User wants detailed analysis',
         })
       );
 
@@ -63,7 +63,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'compare',
           confidence: 0.92,
-          reasoning: 'User wants to compare multiple repos',
+          reasoningText: 'User wants to compare multiple repos',
         })
       );
 
@@ -78,7 +78,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'chat',
           confidence: 0.99,
-          reasoning: 'User is acknowledging',
+          reasoningText: 'User is acknowledging',
         })
       );
 
@@ -93,7 +93,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'clarify',
           confidence: 0.65,
-          reasoning: 'Intent is ambiguous',
+          reasoningText: 'Intent is ambiguous',
         })
       );
 
@@ -115,7 +115,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'analyze',
           confidence: 0.85,
-          reasoning: 'Referencing previous search results',
+          reasoningText: 'Referencing previous search results',
         })
       );
 
@@ -149,7 +149,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'search',
           confidence: 0.8,
-          reasoning: 'New search',
+          reasoningText: 'New search',
         })
       );
 
@@ -180,7 +180,7 @@ describe('Intent Classifier', () => {
 
       expect(result.intent).toBe('clarify');
       expect(result.confidence).toBe(0.0);
-      expect(result.reasoning).toContain('Failed to classify intent');
+      expect(result.reasoningText).toContain('Failed to classify intent');
     });
 
     it('should fallback to clarify on LLM error', async () => {
@@ -203,7 +203,7 @@ describe('Intent Classifier', () => {
 
       expect(result.intent).toBe('clarify');
       expect(result.confidence).toBe(0.0);
-      expect(result.reasoning).toContain('Failed to parse');
+      expect(result.reasoningText).toContain('Failed to parse');
     });
 
     it('should handle JSON with invalid intent', async () => {
@@ -211,7 +211,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'invalid_intent',
           confidence: 0.9,
-          reasoning: 'Test',
+          reasoningText: 'Test',
         })
       );
 
@@ -250,7 +250,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'search',
           confidence: 1.5,
-          reasoning: 'Test',
+          reasoningText: 'Test',
         })
       );
 
@@ -264,7 +264,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'search',
           confidence: -0.5,
-          reasoning: 'Test',
+          reasoningText: 'Test',
         })
       );
 
@@ -277,7 +277,7 @@ describe('Intent Classifier', () => {
       vi.spyOn(llmConfig, "callLLMWithTimeout").mockResolvedValue(
         JSON.stringify({
           intent: 'search',
-          reasoning: 'Test',
+          reasoningText: 'Test',
         })
       );
 
@@ -295,7 +295,7 @@ describe('Intent Classifier', () => {
         JSON.stringify({
           intent: 'search',
           confidence: 0.9,
-          reasoning: 'Test',
+          reasoningText: 'Test',
         })
       );
 

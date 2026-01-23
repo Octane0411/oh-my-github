@@ -2,14 +2,18 @@
  * Scout Node
  *
  * Executes 3 parallel GitHub search strategies and deduplicates results
+ * 
+ * Strategy 1: All-time Best - Global popular tools
+ * Strategy 2: Recent Rising - New tools (2024+)
+ * Strategy 3: LLM-Guided - Classic well-known tools
  */
 
 import { H2DiscoveryState, Repository } from "../state";
 import {
   createGitHubClient,
-  primarySearch,
-  toolFocusedSearch,
-  ecosystemSearch,
+  allTimeBestSearch,
+  recentRisingSearch,
+  llmGuidedSearch,
 } from "./strategies";
 
 /**
@@ -72,18 +76,18 @@ export async function scoutNode(
     console.log("🔍 Executing Scout strategies in parallel...");
 
     // Execute 3 strategies in parallel
-    const [primaryResults, toolResults, ecosystemResults] = await Promise.all([
-      primarySearch(octokit, keywords),
-      toolFocusedSearch(octokit, keywords, state.toolType),
-      ecosystemSearch(octokit, keywords, state.language),
+    const [allTimeResults, recentResults, llmResults] = await Promise.all([
+      allTimeBestSearch(octokit, keywords, state.language),
+      recentRisingSearch(octokit, keywords, state.language),
+      llmGuidedSearch(octokit, keywords, state.language),
     ]);
 
-    console.log(`  Primary: ${primaryResults.length} repos`);
-    console.log(`  Tool-focused: ${toolResults.length} repos`);
-    console.log(`  Ecosystem: ${ecosystemResults.length} repos`);
+    console.log(`  All-time Best: ${allTimeResults.length} repos`);
+    console.log(`  Recent Rising (2024+): ${recentResults.length} repos`);
+    console.log(`  LLM-guided: ${llmResults.length} repos`);
 
     // Merge and deduplicate
-    const allResults = [...primaryResults, ...toolResults, ...ecosystemResults];
+    const allResults = [...allTimeResults, ...recentResults, ...llmResults];
     const uniqueResults = deduplicateRepositories(allResults);
     const filteredResults = filterRepositories(uniqueResults);
 

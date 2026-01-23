@@ -71,14 +71,14 @@ vi.mock('../../h1-search-pipeline/llm-config', () => ({
       return JSON.stringify({
         intent: 'search',
         confidence: 0.95,
-        reasoning: 'User wants to find repositories',
+        reasoningText: 'User wants to find repositories',
       });
     }
 
     return JSON.stringify({
       intent: 'clarify',
       confidence: 0.5,
-      reasoning: 'Ambiguous request',
+      reasoningText: 'Ambiguous request',
     });
   }),
 }));
@@ -161,7 +161,7 @@ describe('Coordinator Workflow Integration', () => {
       JSON.stringify({
         intent: 'analyze',
         confidence: 0.9,
-        reasoning: 'User wants analysis',
+        reasoningText: 'User wants analysis',
       })
     );
 

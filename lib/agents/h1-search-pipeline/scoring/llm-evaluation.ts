@@ -21,7 +21,7 @@ export interface LLMEvaluationResult {
   documentation: number;
   easeOfUse: number;
   relevance: number;
-  reasoning?: {
+  reasoningText?: {
     documentation?: string;
     easeOfUse?: string;
     relevance?: string;
@@ -127,7 +127,7 @@ Provide your evaluation as JSON only (no markdown code blocks):
       documentation,
       easeOfUse,
       relevance,
-      reasoning: parsed.reasoning,
+      reasoningText: parsed.reasoningText,
     };
   } catch (error) {
     console.warn(

@@ -39,17 +39,33 @@ export async function findRepository(params: FindRepositoryParams) {
       };
     }
 
-    // Build summary
-    const summary = `Found ${top5.length} repositories:\n${top5
+    // Build summary with emphasis on top choice
+    const summary = `Found ${top5.length} repositories ranked by ACS score.
+
+TOP RECOMMENDATION:
+1. ${top5[0]!.repo.full_name} (Stars: ${top5[0]!.repo.stars}, ACS: ${top5[0]!.acsScore.total}/100)
+   ${top5[0]!.repo.description || 'No description'}
+   Recommendation: ${top5[0]!.acsScore.recommendation}
+   Why: ${top5[0]!.reasoningText}
+
+${top5.length > 1 ? `ALTERNATIVES (with different trade-offs):\n${top5
+      .slice(1)
       .map(
         (r, i) =>
-          `${i + 1}. ${r.repo.full_name} (ACS: ${r.acsScore.total}/100 - ${r.acsScore.recommendation})`
+          `${i + 2}. ${r.repo.full_name} (Stars: ${r.repo.stars}, ACS: ${r.acsScore.total}/100)
+   ${r.repo.description || 'No description'}
+   Recommendation: ${r.acsScore.recommendation}
+   Key differentiator: ${r.reasoningText}`
       )
-      .join("\n")}`;
+      .join("\n\n")}` : ''}
+
+IMPORTANT: Present the TOP recommendation as the main choice. Only mention alternatives if they offer DIFFERENT trade-offs.`;
 
     return {
       success: true,
-      repositories: top5.map((scored) => ({
+      repositories: top5.map((scored, index) => ({
+        rank: index + 1,
+        isTopChoice: index === 0,
         fullName: scored.repo.full_name,
         description: scored.repo.description,
         stars: scored.repo.stars,
@@ -58,7 +74,7 @@ export async function findRepository(params: FindRepositoryParams) {
         acsScore: scored.acsScore.total,
         recommendation: scored.acsScore.recommendation,
         skillStrategy: scored.acsScore.skill_strategy,
-        reasoning: scored.reasoning,
+        reasoningText: scored.reasoningText,
       })),
       summary,
       cost: result.costTracking?.estimatedCost || 0,

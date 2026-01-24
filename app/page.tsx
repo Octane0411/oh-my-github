@@ -321,26 +321,45 @@ export default function SkillFactoryPage() {
                 <ScoutBlock logs={discoveryLogs} />
 
                 {acsScores.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
+                    {/* Top Recommendation */}
                     <div className="max-w-4xl mx-auto px-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground">
-                        Found {acsScores.length} repositories
-                      </h3>
-                    </div>
-                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
-                      <div className="overflow-x-auto repo-scroll-container">
-                        <div className="flex gap-4 px-4 py-1">
-                          {acsScores.map((repo, idx) => (
-                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
-                              <ACSScoreCard
-                                repository={repo}
-                                onConvert={handleConvertToSkill}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🎯</span>
+                        <h3 className="text-base font-semibold text-foreground">
+                          Best Match
+                        </h3>
+                      </div>
+                      <div className="max-w-[380px]">
+                        <ACSScoreCard
+                          repository={acsScores[0]!}
+                          onConvert={handleConvertToSkill}
+                        />
                       </div>
                     </div>
+
+                    {/* Alternatives */}
+                    {acsScores.length > 1 && (
+                      <div className="max-w-4xl mx-auto px-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                          📋 If you need different trade-offs ({acsScores.length - 1} alternatives)
+                        </h3>
+                        <div className="repo-scroll-wrapper">
+                          <div className="overflow-x-auto repo-scroll-container">
+                            <div className="flex gap-4 py-1">
+                              {acsScores.slice(1).map((repo, idx) => (
+                                <div key={idx + 1} className="flex-shrink-0" style={{ width: '340px' }}>
+                                  <ACSScoreCard
+                                    repository={repo}
+                                    onConvert={handleConvertToSkill}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -362,26 +381,45 @@ export default function SkillFactoryPage() {
                 )}
 
                 {acsScores.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
+                    {/* Top Recommendation */}
                     <div className="max-w-4xl mx-auto px-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground">
-                        Found {acsScores.length} repositories
-                      </h3>
-                    </div>
-                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
-                      <div className="overflow-x-auto repo-scroll-container">
-                        <div className="flex gap-4 px-4 py-1">
-                          {acsScores.map((repo, idx) => (
-                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
-                              <ACSScoreCard
-                                repository={repo}
-                                onConvert={handleConvertToSkill}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🎯</span>
+                        <h3 className="text-base font-semibold text-foreground">
+                          Best Match
+                        </h3>
+                      </div>
+                      <div className="max-w-[380px]">
+                        <ACSScoreCard
+                          repository={acsScores[0]!}
+                          onConvert={handleConvertToSkill}
+                        />
                       </div>
                     </div>
+
+                    {/* Alternatives */}
+                    {acsScores.length > 1 && (
+                      <div className="max-w-4xl mx-auto px-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                          📋 If you need different trade-offs ({acsScores.length - 1} alternatives)
+                        </h3>
+                        <div className="repo-scroll-wrapper">
+                          <div className="overflow-x-auto repo-scroll-container">
+                            <div className="flex gap-4 py-1">
+                              {acsScores.slice(1).map((repo, idx) => (
+                                <div key={idx + 1} className="flex-shrink-0" style={{ width: '340px' }}>
+                                  <ACSScoreCard
+                                    repository={repo}
+                                    onConvert={handleConvertToSkill}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -406,26 +444,45 @@ export default function SkillFactoryPage() {
                 )}
 
                 {acsScores.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
+                    {/* Top Recommendation */}
                     <div className="max-w-4xl mx-auto px-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground">
-                        Found {acsScores.length} repositories
-                      </h3>
-                    </div>
-                    <div className="max-w-4xl mx-auto repo-scroll-wrapper">
-                      <div className="overflow-x-auto repo-scroll-container">
-                        <div className="flex gap-4 px-4 py-1">
-                          {acsScores.map((repo, idx) => (
-                            <div key={idx} className="flex-shrink-0" style={{ width: '340px' }}>
-                              <ACSScoreCard
-                                repository={repo}
-                                onConvert={handleConvertToSkill}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🎯</span>
+                        <h3 className="text-base font-semibold text-foreground">
+                          Best Match
+                        </h3>
+                      </div>
+                      <div className="max-w-[380px]">
+                        <ACSScoreCard
+                          repository={acsScores[0]!}
+                          onConvert={handleConvertToSkill}
+                        />
                       </div>
                     </div>
+
+                    {/* Alternatives */}
+                    {acsScores.length > 1 && (
+                      <div className="max-w-4xl mx-auto px-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                          📋 If you need different trade-offs ({acsScores.length - 1} alternatives)
+                        </h3>
+                        <div className="repo-scroll-wrapper">
+                          <div className="overflow-x-auto repo-scroll-container">
+                            <div className="flex gap-4 py-1">
+                              {acsScores.slice(1).map((repo, idx) => (
+                                <div key={idx + 1} className="flex-shrink-0" style={{ width: '340px' }}>
+                                  <ACSScoreCard
+                                    repository={repo}
+                                    onConvert={handleConvertToSkill}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

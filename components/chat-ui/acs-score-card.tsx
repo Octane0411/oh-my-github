@@ -28,7 +28,7 @@ export function ACSScoreCard({ repository, onConvert, isConverting }: ACSScoreCa
   const { acsScore } = repository;
 
   return (
-    <div className="result-card h-[280px] flex flex-col">
+    <div className="result-card h-[360px] flex flex-col">
       {/* Header with ACS Badge */}
       <div className="result-card-header flex-shrink-0">
         <div className="flex-1 min-w-0">
@@ -73,6 +73,43 @@ export function ACSScoreCard({ repository, onConvert, isConverting }: ACSScoreCa
             {repository.language}
           </div>
         )}
+
+        {/* ACS Dimension Breakdown */}
+        <div className="space-y-1.5">
+          <div className="text-xs font-medium text-muted-foreground">ACS Breakdown:</div>
+          {[
+            { name: 'Interface', value: acsScore.interface, icon: '🎯' },
+            { name: 'Docs', value: acsScore.documentation, icon: '📚' },
+            { name: 'Token Economy', value: acsScore.complexity, icon: '⚡' },
+          ].map((dimension) => {
+            const isStrongest = dimension.value === Math.max(
+              acsScore.interface,
+              acsScore.documentation,
+              acsScore.complexity
+            );
+            const barWidth = `${dimension.value}%`;
+
+            return (
+              <div key={dimension.name} className="flex items-center gap-2">
+                <span className="text-xs w-3">{dimension.icon}</span>
+                <span className={`text-xs w-20 ${isStrongest ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                  {dimension.name}
+                </span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      isStrongest ? 'bg-primary' : 'bg-muted-foreground/40'
+                    }`}
+                    style={{ width: barWidth }}
+                  />
+                </div>
+                <span className={`text-xs w-8 text-right ${isStrongest ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                  {dimension.value}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
         {/* AI Summary (simplified reasoning) */}
         {repository.reasoningText && (

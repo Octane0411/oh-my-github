@@ -209,6 +209,113 @@ Guidelines:
 - **AND** avoid over-explaining (keep responses concise)
 - **AND** use technical terminology appropriately (user is a developer)
 
+### Requirement: ACS-Based Recommendation Reasoning
+The system SHALL analyze ACS dimensions to provide personalized recommendations that reduce decision paralysis.
+
+#### Scenario: ACS dimension understanding
+- **WHEN** presenting repository results
+- **THEN** analyze the 4 ACS dimensions:
+  - **Interface Clarity** (0-100): How easy is it to use? Clear API, simple setup, good examples
+  - **Documentation** (0-100): Quality and completeness of docs, guides, examples
+  - **Environment** (0-100): Cross-platform support, dependencies, compatibility
+  - **Token Economy** (0-100): Code size, efficiency, token cost for AI processing
+- **AND** identify which dimension(s) make each repository suitable for different use cases
+
+#### Scenario: Top recommendation presentation
+- **WHEN** findRepository tool returns results
+- **THEN** analyze which ACS dimension(s) make the top choice ideal for the user's specific query
+- **AND** present top recommendation with 2-3 sentences explaining why it's best
+- **AND** reference the key ACS dimension that makes it ideal
+- **EXAMPLE**: "This repo has exceptional Interface Clarity with an intuitive API, perfect for your quick integration needs"
+
+#### Scenario: Alternative differentiation
+- **WHEN** presenting alternatives to the top choice
+- **THEN** explain which ACS dimension each alternative excels at (different trade-offs)
+- **AND** phrase as "Choose this if you need [specific dimension benefit]"
+- **EXAMPLES**:
+  - "Choose this if you need better Documentation but don't mind more complex setup"
+  - "Choose this if Token Economy is your priority for cost-sensitive use cases"
+  - "Choose this if you prefer CLI tools with superior Interface Clarity"
+- **AVOID** generic phrases like "also a good choice" or "another viable option"
+
+#### Scenario: Progressive disclosure of alternatives
+- **WHEN** presenting results
+- **THEN** lead with ONE clear recommendation
+- **AND** calculate score gap between top choice and first alternative
+- **IF** score gap > 15 points (clear winner)
+  - **THEN** focus presentation on top choice only
+  - **AND** mention "This is a clear winner" to build confidence
+  - **AND** don't present alternatives unless user specifically asks
+- **IF** score gap < 15 points (close competition)
+  - **THEN** present top choice prominently
+  - **AND** show alternatives with clear differentiators based on ACS dimensions
+  - **AND** help user choose based on their specific priority
+
+#### Scenario: Reasoning quality validation
+- **WHEN** generating recommendation reasoning
+- **THEN** reasoning MUST reference specific ACS dimension(s)
+- **AND** reasoning MUST connect to user's stated query/need
+- **AND** reasoning MUST be specific (not generic like "good library")
+- **EXAMPLE GOOD**: "Excels in Token Economy with compact code perfect for cost-sensitive AI workflows"
+- **EXAMPLE BAD**: "This is a great library that works well"
+
+#### Example: Before vs After ACS-Based Reasoning
+
+**User Query**: "I want to extract text from PDF files for AI processing"
+
+**BEFORE (Generic List)**:
+```
+Found 5 repositories:
+
+1. PyMuPDF (⭐ 8,900, ACS: 87/100)
+   Fast PDF library for Python
+
+2. pdfplumber (⭐ 6,200, ACS: 82/100)
+   Extract text and tables from PDFs
+
+3. pdfminer.six (⭐ 5,400, ACS: 78/100)
+   Python library for extracting information from PDFs
+
+4. PyPDF2 (⭐ 7,800, ACS: 74/100)
+   Pure Python PDF library
+
+5. camelot (⭐ 4,300, ACS: 71/100)
+   PDF table extraction for Python
+```
+❌ **Problem**: User faces decision paralysis - which one should they choose? They all sound good.
+
+**AFTER (ACS-Based Reasoning)**:
+```
+I found the perfect tool for extracting text from PDFs! 🎯
+
+**Best Choice: PyMuPDF**
+
+This is your best bet because it excels in **Interface Clarity** with an intuitive API and **Token Economy** with efficient code that's perfect for AI processing. It's the fastest Python library for PDF text extraction, with excellent support for complex PDFs including scanned documents. With 8,900+ stars, it's battle-tested and actively maintained.
+
+Key strengths:
+- Lightning-fast performance (written in C)
+- Handles both text and OCR
+- Excellent documentation with tons of examples (high Documentation score)
+- Works great for Agent Skills - simple API (superior Interface Clarity)
+
+Perfect for: Your use case of extracting text from PDFs for AI processing.
+
+---
+
+📋 **If you need something different:**
+
+**pdfplumber** - Choose this if you need to extract tables with precise formatting
+- Stronger at preserving table structure
+- Better **Documentation** for beginners (but lower Token Economy - slower)
+
+**pdfminer.six** - Choose this if you need low-level control over PDF parsing
+- Most customizable for complex parsing needs
+- Lower **Interface Clarity** but maximum flexibility
+
+Would you like me to generate a skill from PyMuPDF?
+```
+✅ **Improvement**: User immediately knows PyMuPDF is best for their needs (AI processing = need speed + simplicity). Alternatives are shown only if they have different priorities (better docs, more control).
+
 ### Requirement: Input Validation and Safety
 The system SHALL validate user input and handle malicious inputs gracefully.
 

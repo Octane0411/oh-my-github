@@ -25,7 +25,11 @@ export interface ScoredRepository {
   stars: number;
   language?: string; // Primary programming language
   acsScore: ACSScore;
-  reasoningText?: string; // Why this repo was selected
+  reasoningText?: string; // Why this repo was selected (from H2 discovery)
+  topRecommendationReason?: string; // Why this is the #1 choice (from Consultant Agent analysis)
+  alternativeReason?: string; // When to choose this alternative (from Consultant Agent analysis)
+  rank?: number; // Position in the recommendation list
+  isTopChoice?: boolean; // Whether this is the primary recommendation
 }
 
 /**

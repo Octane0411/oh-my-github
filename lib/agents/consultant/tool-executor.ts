@@ -161,6 +161,10 @@ export async function executeFindRepositoryWithEvents(
     }
 
     // Build result with rich context for LLM
+    const topRepo = top5[0]!;
+    const scoreGap = top5.length > 1 ? topRepo.acsScore.total - top5[1]!.acsScore.total : 100;
+    const showAlternatives = scoreGap < 15;
+
     const resultData = {
       success: true,
       repositories: top5.map((scored, index) => ({
@@ -181,26 +185,41 @@ export async function executeFindRepositoryWithEvents(
         skillStrategy: scored.acsScore.skill_strategy,
         reasoningText: scored.reasoningText,
       })),
-      summary: `Found ${top5.length} repositories ranked by ACS score.
+      summary: `Found ${top5.length} repositories ranked by ACS score (Interface Clarity, Documentation, Environment, Token Economy).
 
 🎯 TOP RECOMMENDATION:
-1. ${top5[0]!.repo.full_name} (⭐ ${top5[0]!.repo.stars}, ACS: ${top5[0]!.acsScore.total}/100)
-   ${top5[0]!.repo.description || 'No description'}
-   Recommendation: ${top5[0]!.acsScore.recommendation}
-   Why: ${top5[0]!.reasoningText}
+${topRepo.repo.full_name} (⭐ ${topRepo.repo.stars}, ACS: ${topRepo.acsScore.total}/100)
+${topRepo.repo.description || 'No description'}
 
-${top5.length > 1 ? `📋 ALTERNATIVES (with different trade-offs):\n${top5
+ACS Breakdown:
+- Interface Clarity: ${topRepo.acsScore.breakdown.interface_clarity}/100
+- Documentation: ${topRepo.acsScore.breakdown.documentation}/100
+- Token Economy: ${topRepo.acsScore.breakdown.token_economy}/100
+
+YOUR TASK: Analyze which ACS dimension(s) make this the best choice for the user's specific query. Explain in 2-3 sentences why this repo excels at the dimension most relevant to their need.
+
+${showAlternatives && top5.length > 1 ? `
+📋 ALTERNATIVES (score gap < 15 points):
+${top5
         .slice(1)
         .map(
           (r, i) =>
             `${i + 2}. ${r.repo.full_name} (⭐ ${r.repo.stars}, ACS: ${r.acsScore.total}/100)
-   ${r.repo.description || 'No description'}
-   Recommendation: ${r.acsScore.recommendation}
-   Key differentiator: ${r.reasoningText}`
+   ACS: Interface ${r.acsScore.breakdown.interface_clarity}, Docs ${r.acsScore.breakdown.documentation}, Token Economy ${r.acsScore.breakdown.token_economy}
+   ${r.repo.description || 'No description'}`
         )
-        .join("\n\n")}` : ''}
+        .join("\n\n")}
 
-IMPORTANT: Present the TOP recommendation as the main choice. Only mention alternatives if they offer DIFFERENT trade-offs (e.g., simpler API, better docs, different features).`,
+YOUR TASK: For each alternative, identify which ACS dimension it excels at compared to the top choice. Phrase as "Choose this if you need [specific dimension benefit]".` :
+scoreGap >= 15 ? `
+✅ CLEAR WINNER (score gap: ${scoreGap.toFixed(1)} points)
+Focus on presenting the top recommendation. Alternatives are significantly weaker, so don't present them unless the user specifically asks.` : ''}
+
+CRITICAL INSTRUCTIONS:
+1. Lead with ONE clear recommendation
+2. Explain WHY using the specific ACS dimension(s) that match the user's query
+3. For alternatives (if shown), differentiate by ACS dimensions - not generic "also good"
+4. Reference the numerical scores above when explaining trade-offs`,
       cost: result.costTracking?.estimatedCost || 0,
     };
 
